@@ -14,6 +14,12 @@ class Role(str, Enum):
     admin = "admin"
     viewer = "viewer"
 
+class TextSize(str, Enum):
+    kecil = "kecil"              # 87.5%
+    biasa = "biasa"              # 100% (default)
+    besar = "besar"              # 112.5%
+    sangat_besar = "sangat_besar"  # 125%
+
 class UserBase(SQLModel):
     email: str = Field(unique=True, index=True, max_length=255)
     display_name: str = Field(max_length=200)
@@ -24,6 +30,7 @@ class User(UserBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     last_login_at: Optional[datetime] = None
+    text_size: TextSize = Field(default=TextSize.biasa)
 
     added_videos: List["Video"] = Relationship(back_populates="added_by_user")
     progress_records: List["UserVideoProgress"] = Relationship(back_populates="user")
@@ -64,6 +71,7 @@ class VideoBase(SQLModel):
     file_size_bytes: int = Field(default=0)
     speaker_id: Optional[int] = Field(default=None, foreign_key="speaker.id")
     collection_id: Optional[int] = Field(default=None, foreign_key="collection.id")
+    series_number: Optional[int] = None
     added_by_user_id: Optional[int] = Field(default=None, foreign_key="user.id")
 
 class Video(VideoBase, table=True):
@@ -71,6 +79,10 @@ class Video(VideoBase, table=True):
     file_path: Optional[str] = None
     audio_path: Optional[str] = None
     thumbnail_path: Optional[str] = None
+    # Set only while an admin-uploaded thumbnail is active: `thumbnail_path` then points at the
+    # custom WebP and `original_thumbnail_path` remembers the YouTube one so it can be restored.
+    is_custom_thumbnail: bool = Field(default=False)
+    original_thumbnail_path: Optional[str] = None
     resolution_height: Optional[int] = Field(default=720, index=True)
     is_max_quality: bool = Field(default=False)
     status: VideoStatus = Field(default=VideoStatus.pending, index=True)
@@ -128,6 +140,11 @@ class VideoUpdateRequest(SQLModel):
     speaker_name: Optional[str] = None
     collection_id: Optional[int] = None
     collection_title: Optional[str] = None
+    # Only applied when the key is present in the request body; an explicit null clears it.
+    series_number: Optional[int] = Field(default=None, ge=1, le=9999)
+
+class UserPreferencesRequest(SQLModel):
+    text_size: Optional[TextSize] = None
 
 class SpeakerCreateRequest(SQLModel):
     name: str

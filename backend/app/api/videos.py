@@ -1,5 +1,6 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request, status
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request, UploadFile, File, status
+from fastapi.concurrency import run_in_threadpool
 from sqlmodel import Session, select, or_, desc, asc
 from app.core.database import get_session
 from app.core.auth import get_optional_user, require_admin
@@ -15,8 +16,13 @@ from app.services.downloader import (
 )
 from pathlib import Path
 import os
-from app.core.config import VIDEOS_DIR, STORAGE_DIR, THUMBNAILS_DIR
+from app.core.config import VIDEOS_DIR, STORAGE_DIR
 from app.services.streamer import create_video_streaming_response, verify_safe_path
+from app.services.series import parse_series_number
+from app.services.thumbnails import (
+    MAX_UPLOAD_BYTES, sniff_image_extension, convert_image_to_webp,
+    new_custom_thumbnail_target, thumbnail_fs_path, delete_thumbnail_file,
+)
 
 router = APIRouter(tags=["Videos"])
 
@@ -79,6 +85,7 @@ async def batch_fetch_videos(
             youtube_id=yt_id,
             title=title,
             duration_seconds=duration,
+            series_number=parse_series_number(title),
             speaker_id=speaker.id if speaker else None,
             added_by_user_id=current_user.id,
             status=VideoStatus.pending,
@@ -215,6 +222,8 @@ async def list_videos(
             "duration_seconds": v.duration_seconds,
             "file_size_bytes": v.file_size_bytes,
             "thumbnail_path": v.thumbnail_path,
+            "is_custom_thumbnail": v.is_custom_thumbnail,
+            "series_number": v.series_number,
             "created_at": v.created_at,
             "speaker": {
                 "id": v.speaker.id,
@@ -297,6 +306,10 @@ async def update_video(
     elif payload.collection_id is not None:
         video.collection_id = payload.collection_id
 
+    # series_number is nullable, so "absent" (leave alone) must differ from null (clear it)
+    if "series_number" in payload.model_fields_set:
+        video.series_number = payload.series_number
+
     session.add(video)
     session.commit()
     session.refresh(video)
@@ -317,12 +330,10 @@ async def delete_video(
     for p in session.exec(progress_stmt).all():
         session.delete(p)
 
-    # Remove media files from the 2TB storage
-    thumb_fs_path = None
-    if video.thumbnail_path and video.thumbnail_path.startswith("/storage/thumbnails/"):
-        thumb_fs_path = str(THUMBNAILS_DIR / video.thumbnail_path.replace("/storage/thumbnails/", "", 1))
+    # Remove media files from the 2TB storage (incl. the YouTube original kept behind a custom thumbnail)
+    thumb_fs_paths = [thumbnail_fs_path(video.thumbnail_path), thumbnail_fs_path(video.original_thumbnail_path)]
 
-    for fs_path in [video.file_path, video.audio_path, thumb_fs_path]:
+    for fs_path in [video.file_path, video.audio_path, *thumb_fs_paths]:
         if not fs_path:
             continue
         try:
@@ -335,6 +346,102 @@ async def delete_video(
     session.delete(video)
     session.commit()
     return {"status": "success", "message": "Ceramah berjaya dipadam dari pustaka dan storan."}
+
+
+def _thumbnail_state(video: Video):
+    return {
+        "id": video.id,
+        "thumbnail_path": video.thumbnail_path,
+        "is_custom_thumbnail": video.is_custom_thumbnail,
+    }
+
+
+async def _read_upload_limited(file: UploadFile, limit: int) -> bytes:
+    chunks = []
+    total = 0
+    while chunk := await file.read(1024 * 1024):
+        total += len(chunk)
+        if total > limit:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=f"Imej terlalu besar (maksimum {limit // (1024 * 1024)} MB).",
+            )
+        chunks.append(chunk)
+    return b"".join(chunks)
+
+
+@router.post("/videos/{video_id}/thumbnail")
+async def upload_video_thumbnail(
+    video_id: int,
+    file: UploadFile = File(...),
+    current_user: User = Depends(require_admin),
+    session: Session = Depends(get_session)
+):
+    video = session.get(Video, video_id)
+    if not video:
+        raise HTTPException(status_code=404, detail="Video tidak ditemui")
+
+    data = await _read_upload_limited(file, MAX_UPLOAD_BYTES)
+    source_ext = sniff_image_extension(data[:16])
+    if not source_ext:
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail="Jenis fail tidak disokong. Sila gunakan imej JPEG, PNG atau WebP.",
+        )
+
+    new_path, new_url = new_custom_thumbnail_target(video.id)
+    try:
+        await run_in_threadpool(convert_image_to_webp, data, source_ext, new_path)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    previous_custom = video.thumbnail_path if video.is_custom_thumbnail else None
+    if not video.is_custom_thumbnail:
+        video.original_thumbnail_path = video.thumbnail_path
+    video.thumbnail_path = new_url
+    video.is_custom_thumbnail = True
+    session.add(video)
+    try:
+        session.commit()
+    except Exception:
+        new_path.unlink(missing_ok=True)
+        raise
+    session.refresh(video)
+
+    delete_thumbnail_file(previous_custom, custom_only=True)
+    return _thumbnail_state(video)
+
+
+@router.delete("/videos/{video_id}/thumbnail")
+async def reset_video_thumbnail(
+    video_id: int,
+    current_user: User = Depends(require_admin),
+    session: Session = Depends(get_session)
+):
+    """Discard the uploaded thumbnail and restore the original YouTube one."""
+    video = session.get(Video, video_id)
+    if not video:
+        raise HTTPException(status_code=404, detail="Video tidak ditemui")
+
+    if not video.is_custom_thumbnail:
+        return _thumbnail_state(video)  # already the default; nothing to do
+
+    original = video.original_thumbnail_path
+    if original:
+        original_fs = thumbnail_fs_path(original)
+        if not original_fs or not original_fs.is_file():
+            raise HTTPException(status_code=404, detail="Thumbnail asal tidak ditemui.")
+
+    custom = video.thumbnail_path
+    video.thumbnail_path = original
+    video.original_thumbnail_path = None
+    video.is_custom_thumbnail = False
+    session.add(video)
+    session.commit()
+    session.refresh(video)
+
+    delete_thumbnail_file(custom, custom_only=True)
+    return _thumbnail_state(video)
 
 
 @router.get("/stream/{video_id}")
@@ -597,6 +704,7 @@ async def scan_existing_media(
                 youtube_url="local://" + file_path.name,
                 youtube_id=file_path.stem[:30],
                 title=title,
+                series_number=parse_series_number(title),
                 duration_seconds=0,
                 file_size_bytes=size_bytes,
                 file_path=str(file_path),

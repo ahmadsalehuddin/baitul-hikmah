@@ -12,12 +12,12 @@ MIME_TYPE_OVERRIDES = {
     ".m4a": "audio/mp4",
 }
 
-def verify_safe_path(target_path: Path, allowed_root: Path) -> Path:
+def verify_safe_path(target_path: Path, allowed_root: Path, must_exist: bool = True) -> Path:
     resolved_target = target_path.resolve()
     resolved_root = allowed_root.resolve()
     if not resolved_target.is_relative_to(resolved_root):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Akses ditolak: Laluan fail tidak sah.")
-    if not resolved_target.exists():
+    if must_exist and not resolved_target.exists():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Fail tidak dijumpai.")
     return resolved_target
 

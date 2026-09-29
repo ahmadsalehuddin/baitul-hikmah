@@ -151,9 +151,10 @@ This living document tracks the status of all activities across the project, cle
 - **7.1 implementation notes** (details in [`architecture-specs.md` §8.4](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md)): `npm run build` passes; legacy pages still render on the new foundation and were smoke-tested in a headless browser with a mocked API (routes, `?tonton` open/Back/refresh/unknown-id). The legacy pages themselves are unchanged apart from mechanical Tailwind-v4 renames and are fully replaced in 7.3.
 
 **7.2 Backend additions (§8.3.11)**
-- [ ] **Claude:** Thumbnail upload + reset-to-default endpoints (admin, validated, path-contained).
-- [ ] **Claude:** User text-size preference field + endpoint.
-- [ ] **Claude:** `Video.series_number` field, auto-parse on download, backfill existing videos.
+- [x] **Claude:** Thumbnail upload + reset-to-default endpoints (admin, validated, path-contained).
+- [x] **Claude:** User text-size preference field + endpoint.
+- [x] **Claude:** `Video.series_number` field, auto-parse on download, backfill existing videos.
+- **7.2 implementation notes** (API shapes in [`architecture-specs.md` §8.4](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md)): verified on a temp copy of the DB/media on port 8765 (live DB and media confirmed byte-identical afterwards). **Not yet deployed:** the production backend container must be rebuilt/restarted (columns are added automatically on startup), then run the backfill once: `docker exec baitul_hikmah_backend python scripts/backfill_series_number.py --dry-run`, then again without `--dry-run`.
 
 **7.3 Pages & components**
 - [ ] **Claude:** Navbar + profile menu + phone Sheet (§8.3.3).
@@ -164,6 +165,9 @@ This living document tracks the status of all activities across the project, cle
 - [ ] **Claude:** Urus Pustaka redesign (§8.3.8).
 - [ ] **Claude:** Saiz Teks accessibility setting (§8.3.9).
 - [ ] **Claude:** Responsive layouts for phone/tablet/desktop (§8.3.10).
+
+**Next after 7.3: Auth hardening (spec [§6](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md) / §7.2)**
+- [ ] **Claude:** `backend/app/core/auth.py` `_extract_email()` always falls back to the admin account (`DEV_FALLBACK_EMAIL`) when no auth header is sent, and honours `X-Dev-User-Email` in every environment. The §7.2 guard "disable `X-Dev-User-Email` bypass when `ENVIRONMENT=production`" is not implemented. Fix: add an `ENVIRONMENT` setting (set `production` in `docker-compose.yml`); in production accept only `Cf-Access-Authenticated-User-Email` (and verify the `Cf-Access-Jwt-Assertion` signature per §6.1), return 401 otherwise, keep the dev fallback only for local dev. Check that the frontend nginx does not let a client-supplied `X-Dev-User-Email` reach the backend. Verify with header-less, spoofed-header and valid-header requests. *(Found while doing 7.2; not part of it.)*
 
 **7.4 Verification**
 - [ ] **Claude:** Clean `npm run build`; audit for §8.1 compliance (no hand-rolled components, no arbitrary values).

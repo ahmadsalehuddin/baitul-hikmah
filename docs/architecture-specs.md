@@ -63,6 +63,7 @@ erDiagram
         string avatar_url
         datetime created_at
         datetime last_login_at
+        string text_size "kecil | biasa | besar | sangat_besar (default biasa)"
     }
 
     Speaker {
@@ -102,6 +103,9 @@ erDiagram
         string error_message
         int speaker_id FK
         int collection_id FK "Nullable (can belong to multi-speaker collection)"
+        int series_number "Optional; parsed from 'Siri N' in title"
+        bool is_custom_thumbnail "True while an admin-uploaded thumbnail is active"
+        string original_thumbnail_path "YouTube thumbnail kept while a custom one is active"
         int added_by_user_id FK "Ahmad (Admin)"
         datetime created_at
     }
@@ -467,7 +471,9 @@ The "Fungsi Baharu Sedang Dibangunkan" mockup is obsolete. Redesign keeps all li
 
 **All open items resolved. Requirements finalized pending System Owner's go-ahead to start coding.**
 
-### 8.4 Phase 7.1 Implementation Notes (2026-09-29)
+### 8.4 Phase 7 Implementation Notes
+
+#### Phase 7.1 Foundation (2026-09-29)
 *Facts for future agents; no requirement changes.*
 - **Versions:** React 19.3, Tailwind 4.3 via `@tailwindcss/vite` (no PostCSS config, no `tailwind.config.js` — theme lives in `frontend/src/index.css`), Vite kept at 5.x (`@vitejs/plugin-react` 4.x; v6+ needs Vite 8), `react-router` (v7 API; import from `"react-router"`), `lucide-react` 1.x.
 - **shadcn CLI:** `components.json` uses style `radix-vega` (classic shadcn look; the CLI now requires choosing a preset) with `tsx: false`, alias `@/` → `src/` (`jsconfig.json` + Vite alias). Generated components import `cn` from the official `cn` npm package (shadcn-maintained); `src/lib/utils.js` still exports its own `cn` for the legacy pages. Combobox pulls in `@base-ui/react` and `cmdk` — that is how the CLI builds it.
@@ -477,3 +483,33 @@ The "Fungsi Baharu Sedang Dibangunkan" mockup is obsolete. Redesign keeps all li
 - **Lucide v1** dropped brand icons (`Youtube`); the legacy `VideoModal` uses `CirclePlay` instead.
 - **Routing:** `/penceramah/:id`, `/koleksi/:id` and `/cari` currently render the unfiltered library page until their views are built in 7.3. The `?tonton=<id>` param is handled inside `PustakaPage` for now (opening pushes a history entry so Back closes it; a direct/refreshed URL reopens it; an unknown id is stripped). It moves to an app-level dialog in 7.3. `GET /api/videos/{id}` returns the raw `Video` without speaker/collection/progress, so the dialog resolves the id from the loaded list.
 - **Fonts:** Geist Mono added to the Google Fonts `<link>` in `index.html`; the duplicate CSS `@import` was removed. Lato has no 500/600 weight, so `font-medium`/`font-semibold` fall back to the nearest available weight.
+
+#### Phase 7.2 Backend API (2026-09-29) — contract for 7.3
+*Implemented and verified against a temp DB/media copy. All error `detail` strings are Malay. `is_admin` = `require_admin` (403 for viewers).*
+
+**Schema changes (additive, applied automatically at startup by `init_db()` → `apply_additive_migrations()` in `app/core/database.py`; add future columns to `ADDITIVE_COLUMNS` there — `create_all` alone never alters existing tables):** `user.text_size`, `video.series_number`, `video.is_custom_thumbnail`, `video.original_thumbnail_path`.
+
+**Thumbnail upload — `POST /api/videos/{video_id}/thumbnail`** (admin)
+- Body: `multipart/form-data`, one field **`file`**. Accepts JPEG, PNG or WebP, **max 5 MB, max 8000 px per side**. Type is detected from file content (client filename/Content-Type are ignored). Output is re-encoded as WebP, downscaled to ≤1280 px wide (aspect ratio kept), stored as `custom_{id}_{random}.webp`; the file name changes on every upload, so browsers never show a stale image.
+- 200: `{ "id": 12, "thumbnail_path": "/storage/thumbnails/custom_12_ab12cd34.webp", "is_custom_thumbnail": true }`
+- Errors: 403 non-admin · 404 video not found · 413 over 5 MB · 415 not JPEG/PNG/WebP · 400 corrupt/oversized-dimension image · 422 no `file` field.
+- The YouTube original is kept on disk and remembered; uploading again replaces (and deletes) only the previous custom file.
+
+**Thumbnail reset — `DELETE /api/videos/{video_id}/thumbnail`** (admin)
+- No body. Removes the custom file and restores the original YouTube thumbnail.
+- 200: same shape, e.g. `{ "id": 12, "thumbnail_path": "/storage/thumbnails/8RXpQyysjZI.webp", "is_custom_thumbnail": false }`. Idempotent: if nothing is customised it returns 200 with the current state.
+- Errors: 403 · 404 video not found · 404 `Thumbnail asal tidak ditemui.` (recorded original file is missing on disk; nothing is changed).
+- Known edge: a video that had *no* thumbnail before customising resets to `thumbnail_path: null` (nothing to restore; YouTube is not re-fetched).
+
+**`thumbnail_path` semantics are unchanged:** it is always the URL to display (`/storage/thumbnails/...`, served statically), whether original or custom. `DELETE /api/videos/{id}` now also removes the original + custom files.
+
+**Text size — `PUT /api/auth/me/preferences`** (any signed-in user; always applies to the caller, never to an id in the body)
+- Body: `{ "text_size": "kecil" | "biasa" | "besar" | "sangat_besar" }` (Kecil 87.5% · Biasa 100% · Besar 112.5% · Sangat Besar 125%). Omitted/empty body = no change. Any other value → 422.
+- 200: same payload as `GET /api/auth/me`.
+- **`GET /api/auth/me`** now returns `{ id, email, display_name, role, avatar_url, text_size }` (default `"biasa"`).
+
+**Series number**
+- **`PUT /api/videos/{id}`** (admin) accepts `series_number`: integer **1–9999**, or `null` to clear. Field absent = unchanged (an edit to the title never re-parses it). Out of range / non-integer → 422. Other fields keep their existing behaviour.
+- **`GET /api/videos`** list items now include `series_number` (int | null) and `is_custom_thumbnail` (bool — use it to enable/disable the "reset thumbnail" button). `GET /api/videos/{id}` and the download-queue endpoints return the raw `Video`, which includes `series_number`, `is_custom_thumbnail`, `original_thumbnail_path`.
+- Auto-parse: on creation via `POST /api/videos/batch-fetch` and `POST /api/videos/scan-existing`, the first `Siri N` in the title (case-insensitive, 1–9999; `Siri 03` → 3) sets `series_number`; no match → null. Parser: `app/services/series.py`.
+- **Backfill (one-off, already-existing videos):** `python scripts/backfill_series_number.py [--dry-run]` from `backend/` (fills only empty values, never overwrites; idempotent). On the copy of the live data all 223 titles matched (1–43). **Must be run once on production after the backend is redeployed.**
