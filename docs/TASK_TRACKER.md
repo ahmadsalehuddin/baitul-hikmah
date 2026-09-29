@@ -157,10 +157,10 @@ This living document tracks the status of all activities across the project, cle
 - **7.2 implementation notes** (API shapes in [`architecture-specs.md` §8.4](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md)): verified on a temp copy of the DB/media on port 8765 (live DB and media confirmed byte-identical afterwards). **Deployed to production 2026-09-29:** backend container rebuilt (columns added on startup), backfill run once (223 videos matched), DB backup at `~/baitul_hikmah.db.bak-before-7.2`. Future backend changes need `docker compose build backend && docker compose up -d --no-deps backend`.
 
 **7.3 Pages & components**
-- [ ] **Claude:** Navbar + profile menu + phone Sheet (§8.3.3).
-- [ ] **Claude:** Pustaka Ceramah: cards, Tapis, Susun, Breadcrumb, search, Empty, progressive loading (§8.3.4).
-- [ ] **Claude:** Video Player Dialog + Audio mode with shared shadcn controls incl. fullscreen, auto-hide, buffering, keyboard (§8.3.5).
-- [ ] **Claude:** Tambah Ceramah (§8.3.6).
+- [x] **Claude:** Navbar + profile menu + phone Sheet (§8.3.3). *(7.3a)*
+- [x] **Claude:** Pustaka Ceramah: cards, Tapis, Susun, Breadcrumb, search, Empty, progressive loading (§8.3.4). *(7.3a)*
+- [x] **Claude:** Video Player Dialog + Audio mode with shared shadcn controls incl. fullscreen, auto-hide, buffering, keyboard (§8.3.5). *(7.3a)*
+- [ ] **Claude:** Tambah Ceramah (§8.3.6). *(7.3b)*
 - [ ] **Claude:** Sunting Butiran Ceramah dialog (§8.3.7).
 - [ ] **Claude:** Urus Pustaka redesign (§8.3.8).
 - [ ] **Claude:** Saiz Teks accessibility setting (§8.3.9).

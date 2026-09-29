@@ -46,6 +46,13 @@ export async function fetchVideos(params = {}) {
   return res.json();
 }
 
+/** Raw Video record (has `channel_name`, unlike the list items). */
+export async function fetchVideo(videoId) {
+  const res = await apiFetch(`/videos/${videoId}`);
+  if (!res.ok) throw new Error("Gagal memuatkan butiran video");
+  return res.json();
+}
+
 export async function batchFetchUrls(urls) {
   const res = await apiFetch(`/videos/batch-fetch`, {
     method: "POST",
@@ -100,11 +107,13 @@ export async function fetchContinueWatching() {
   return res.json();
 }
 
-export async function saveVideoProgress(videoId, payload) {
+// `keepalive` lets the last heartbeat survive a page unload (tab close / refresh).
+export async function saveVideoProgress(videoId, payload, { keepalive = false } = {}) {
   const res = await apiFetch(`/progress/${videoId}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
+    keepalive,
   });
   if (!res.ok) throw new Error("Gagal menyimpan kemajuan tontonan");
   return res.json();
