@@ -15,7 +15,7 @@ This living document tracks the status of all activities across the project, cle
 | **Phase 4** | Legacy Migration (223 Videos from Ceramah Downloader) | Claude Code | **COMPLETED** |
 | **Phase 5** | Total Frontend Rework & Admin Suite (Urus & Tambah) | Claude Code | **COMPLETED** |
 | **Phase 6** | Containerization, Cloudflare Tunnel & HP Z240 Deployment | Claude / Gemini / User | **COMPLETED** |
-| **Phase 7** | Frontend Redesign — Obra shadcn/ui ([spec §8](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md)) | Claude & User | **IN PROGRESS** (7.1 done) |
+| **Phase 7** | Frontend Redesign — Obra shadcn/ui ([spec §8](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md)) | Claude & User | **IN PROGRESS** (7.1–7.5 implemented & deployed; user device review pending) |
 
 ---
 
@@ -180,7 +180,9 @@ This living document tracks the status of all activities across the project, cle
 
 **7.5 Frontend polish & performance**
 - [x] **Claude:** Unblock the backend event loop: `POST /videos/batch-fetch` now runs `fetch_video_metadata` (yt-dlp) via `run_in_threadpool`. UX unchanged: pasting URLs does nothing until "Muat Naik" is clicked.
-- [x] **Claude:** Micro-animations using only built-in Tailwind utilities and `tw-animate-css` (no arbitrary values, no token changes; wrapped in `motion-safe:` so "reduce motion" disables them): hover lift + thumbnail/avatar zoom + soft shadow on `VideoCard`, `SpeakerCard`, `CollectionCard`; fade/slide-in on `TabsContent` (`ui/tabs.jsx`). Dialogs already fade/zoom via shadcn, so unchanged.
+- [x] **Claude:** Micro-animations using only built-in Tailwind utilities and `tw-animate-css` (no arbitrary values, no token changes; wrapped in `motion-safe:` so "reduce motion" disables them): hover lift + thumbnail/avatar zoom + soft shadow on `VideoCard`, `SpeakerCard`, `CollectionCard`; fade/slide-in on `TabsContent`. Dialogs already fade/zoom via shadcn, so unchanged.
+- [ ] **User (decision):** the tabs fade-in was added inside the generated `components/ui/tabs.jsx`, which §8.1.2 forbids. Approve it as an exception (log in §8.2) or have it moved to `className` on the `TabsContent` in `UrusPustakaPage.jsx`. See spec §8.4 Phase 7.5.
 - [x] **Claude:** `batch-fetch` multi-URL: metadata lookups now run in parallel (`asyncio.gather` over `run_in_threadpool`); duplicate videos in one paste (same YouTube id, any URL form) and repeated invalid links are collapsed; fixed a pre-existing bug where every queued video except the last serialized as `{}`. Tested with a mocked `yt-dlp` (3 lookups of 1s each returned in ~1.1s).
 - [x] **Claude:** `npm run build` passes.
-- [ ] **User:** Test: paste a URL on Tambah Ceramah and confirm the rest of the site stays responsive while metadata is fetched; check card hover and Urus Pustaka tab transitions. Backend change needs `docker compose build backend && docker compose up -d --no-deps backend` to reach production.
+- [x] **Claude:** Deployed to production 2026-09-29 (`docker compose build backend frontend && docker compose up -d --no-deps backend frontend`; commits `7b53b85`, `0914551`). Implementation notes: [`architecture-specs.md` §8.4 Phase 7.5](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md).
+- [ ] **User:** Test on the live site (hard-refresh): paste 3–5 links incl. a duplicate on Tambah Ceramah (one card per unique video, site stays responsive during the fetch); check card hover and Urus Pustaka tab transitions.

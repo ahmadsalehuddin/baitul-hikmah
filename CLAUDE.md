@@ -9,7 +9,7 @@ The primary goal is to fetch YouTube lecture videos via URL before they are remo
 ## Tech Stack & Architecture
 
 ### Frontend (`/frontend`)
-- **Framework:** React 18 + Vite
+- **Framework:** React 19 + Vite
 - **Styling:** Tailwind CSS + Shadcn UI custom tokens
 - **Icons:** `lucide-react`
 - **Language/Locale:** Bahasa Melayu (Malay)
@@ -80,11 +80,18 @@ npm run dev
 # Dev server runs on http://127.0.0.1:3000 (proxies /api to 127.0.0.1:8000)
 ```
 
+### Production deploy (HP Z240, Docker Compose)
+```bash
+docker compose build backend frontend
+docker compose up -d --no-deps backend frontend   # tunnel container is left running
+```
+Restarting the backend interrupts running downloads — check for pending/downloading videos first. Details: `docs/TASK_TRACKER.md` (7.2, auth hardening).
+
 ---
 
 ## Critical Development Guidelines
 1. **Video Streaming:** Always ensure endpoints serving video (`/api/stream/{video_id}`) support **HTTP 206 Partial Content** using byte ranges so seeking/scrubbing works smoothly on mobile.
-2. **Download Queue:** Never block the main FastAPI thread for `yt-dlp` downloads; use `BackgroundTasks` or async executor.
+2. **Download Queue:** Never block the main FastAPI thread for `yt-dlp` downloads; use `BackgroundTasks` or async executor. The same applies to `yt-dlp` metadata lookups in routes (`run_in_threadpool`; see `batch-fetch`).
 3. **Figma Fidelity:** Preserve the exact wording in Bahasa Melayu:
    - "Pustaka Ceramah" (Library)
    - "Tambah Ceramah" (Add/Download Videos)
