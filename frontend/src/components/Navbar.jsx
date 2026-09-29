@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router";
 import { ChevronDown, Users, Check } from "lucide-react";
 import { fetchCurrentUser, getActiveDevUser, setActiveDevUser, onDevUserChange } from "../lib/api";
 
@@ -14,7 +15,13 @@ function getInitials(name) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-export function Navbar({ activeTab, onTabChange }) {
+const TAB_PATHS = { pustaka: "/", tambah: "/tambah", urus: "/urus" };
+
+export function Navbar() {
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const activeTab = pathname.startsWith("/tambah") ? "tambah" : pathname.startsWith("/urus") ? "urus" : "pustaka";
+  const onTabChange = (tab) => navigate(TAB_PATHS[tab]);
   const [profileOpen, setProfileOpen] = useState(false);
   const [user, setUser] = useState(null);
 
@@ -99,7 +106,7 @@ export function Navbar({ activeTab, onTabChange }) {
           <div className="relative">
             <button
               onClick={() => setProfileOpen(!profileOpen)}
-              className="flex items-center gap-2 pl-1 pr-2 sm:pr-3 py-1 rounded-full hover:bg-muted transition-colors focus:outline-none focus:ring-2 focus:ring-brand-gold/50"
+              className="flex items-center gap-2 pl-1 pr-2 sm:pr-3 py-1 rounded-full hover:bg-muted transition-colors focus:outline-hidden focus:ring-2 focus:ring-brand-gold/50"
               aria-label="Menu Pengguna"
             >
               <span className="w-9 h-9 rounded-full bg-brand-sage/60 text-brand-forest font-semibold text-xs flex items-center justify-center border border-brand-emerald/10 shrink-0">

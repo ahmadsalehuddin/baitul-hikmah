@@ -49,7 +49,7 @@ function Combobox({ label, placeholder, value, onSelect, onCreateLabel, items, g
             setOpen(true);
           }}
           placeholder={placeholder}
-          className="w-full px-3.5 py-2.5 pr-9 bg-white border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/60"
+          className="w-full px-3.5 py-2.5 pr-9 bg-white border border-border rounded-xl text-sm focus:outline-hidden focus:ring-2 focus:ring-brand-gold/60"
         />
         <ChevronDown className="w-4 h-4 text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
       </div>
@@ -153,7 +153,7 @@ export function EditCeramahModal({ video, onClose, onSaved }) {
 
   return (
     <Dialog open={!!video} onOpenChange={(next) => !next && onClose?.()}>
-      <DialogContent className="max-w-lg p-0" showClose={false}>
+      <DialogContent className="max-w-lg p-0" showCloseButton={false}>
         <DialogHeader className="flex-row items-center justify-between px-6 py-4 border-b border-border">
           <DialogTitle>Sunting Butiran Ceramah</DialogTitle>
           <button
@@ -177,14 +177,14 @@ export function EditCeramahModal({ video, onClose, onSaved }) {
             <div className="absolute top-3 right-3 flex items-center gap-2">
               <button
                 type="button"
-                className="p-2 bg-white/90 hover:bg-white rounded-lg shadow-sm text-foreground hover:text-brand-gold transition-colors"
+                className="p-2 bg-white/90 hover:bg-white rounded-lg shadow-xs text-foreground hover:text-brand-gold transition-colors"
                 title="Muat naik gambar baru"
               >
                 <Upload className="w-4 h-4" />
               </button>
               <button
                 type="button"
-                className="p-2 bg-white/90 hover:bg-white rounded-lg shadow-sm text-foreground hover:text-brand-gold transition-colors"
+                className="p-2 bg-white/90 hover:bg-white rounded-lg shadow-xs text-foreground hover:text-brand-gold transition-colors"
                 title="Jana semula gambar"
               >
                 <RotateCw className="w-4 h-4" />
@@ -203,7 +203,7 @@ export function EditCeramahModal({ video, onClose, onSaved }) {
               maxLength={200}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/60"
+              className="w-full px-3.5 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-hidden focus:ring-2 focus:ring-brand-gold/60"
             />
           </div>
 
@@ -248,7 +248,7 @@ export function EditCeramahModal({ video, onClose, onSaved }) {
             type="button"
             disabled={saving}
             onClick={handleSave}
-            className="px-5 py-2 text-xs font-semibold text-white bg-brand-gold hover:bg-brand-gold/90 rounded-lg shadow-sm transition-all disabled:opacity-50"
+            className="px-5 py-2 text-xs font-semibold text-white bg-brand-gold hover:bg-brand-gold/90 rounded-lg shadow-xs transition-all disabled:opacity-50"
           >
             {saving ? "Menyimpan..." : "Simpan"}
           </button>

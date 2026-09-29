@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { User, BookOpen, Youtube, Clock, Check, Heart } from "lucide-react";
+import { User, BookOpen, CirclePlay, Clock, Check, Heart } from "lucide-react";
 import { Dialog, DialogContent } from "../ui/dialog";
 import { VideoPlayer } from "./VideoPlayer";
 import { saveVideoProgress, toggleFavoriteVideo } from "../../lib/api";
@@ -94,7 +94,7 @@ export function VideoModal({ video, open, onClose }) {
             )}
             {video.channel_name && (
               <span className="flex items-center gap-1.5 px-3 py-1 bg-muted text-muted-foreground rounded-full text-xs font-medium">
-                <Youtube className="w-3.5 h-3.5" />
+                <CirclePlay className="w-3.5 h-3.5" />
                 {video.channel_name}
               </span>
             )}

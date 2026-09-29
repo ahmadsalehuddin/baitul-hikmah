@@ -15,7 +15,7 @@ This living document tracks the status of all activities across the project, cle
 | **Phase 4** | Legacy Migration (223 Videos from Ceramah Downloader) | Claude Code | **COMPLETED** |
 | **Phase 5** | Total Frontend Rework & Admin Suite (Urus & Tambah) | Claude Code | **COMPLETED** |
 | **Phase 6** | Containerization, Cloudflare Tunnel & HP Z240 Deployment | Claude / Gemini / User | **COMPLETED** |
-| **Phase 7** | Frontend Redesign — Obra shadcn/ui ([spec §8](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md)) | Claude & User | **PLANNING** |
+| **Phase 7** | Frontend Redesign — Obra shadcn/ui ([spec §8](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md)) | Claude & User | **IN PROGRESS** (7.1 done) |
 
 ---
 
@@ -139,14 +139,16 @@ This living document tracks the status of all activities across the project, cle
 - [x] **Claude & User:** Audit mockups vs live frontend; agree design rules (§8.1) and requirements (§8.3).
 - [x] **Claude:** Record standing design rules in `architecture-specs.md` §8.1, `CLAUDE.md`, `GEMINI.md`.
 - [x] **User:** Resolve open items O1–O5 (§8.3.12).
-- [ ] **User:** Give go-ahead to start coding.
+- [x] **User:** Give go-ahead to start coding. (2026-09-29; also approved React 19 upgrade and gold focus ring.)
 - [ ] **Gemini (optional):** Review §8 for future tracking.
 
 **7.1 Foundation**
-- [ ] **Claude:** Upgrade Tailwind v3 → v4; initialise shadcn/ui CLI (`components.json`, JSX).
-- [ ] **Claude:** Port theme tokens (§8.2) unchanged; add approved `--warning` tokens.
-- [ ] **Claude:** Add React Router with routes from §8.3.1 (incl. `?tonton=<id>`).
-- [ ] **Claude:** Install required shadcn components (§8.3.2).
+- [x] **Claude:** Put repo under git; baseline commit `fd6cce0` before Phase 7.
+- [x] **Claude:** Upgrade React 18 → 19 and Tailwind v3 → v4 (see §8.3.1 notes); initialise shadcn/ui CLI (`components.json`, JSX).
+- [x] **Claude:** Port theme tokens (§8.2) unchanged; add approved `--warning` tokens.
+- [x] **Claude:** Add React Router with routes from §8.3.1 (incl. `?tonton=<id>`).
+- [x] **Claude:** Install required shadcn components (§8.3.2); add the approved `warning` variant to `alert.jsx` (§8.2 log).
+- **7.1 implementation notes** (details in [`architecture-specs.md` §8.4](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md)): `npm run build` passes; legacy pages still render on the new foundation and were smoke-tested in a headless browser with a mocked API (routes, `?tonton` open/Back/refresh/unknown-id). The legacy pages themselves are unchanged apart from mechanical Tailwind-v4 renames and are fully replaced in 7.3.
 
 **7.2 Backend additions (§8.3.11)**
 - [ ] **Claude:** Thumbnail upload + reset-to-default endpoints (admin, validated, path-contained).

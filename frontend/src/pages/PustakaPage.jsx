@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useLocation, useNavigate, useSearchParams } from "react-router";
 import { Search, X, SlidersHorizontal, ArrowUpDown, Clock, Check, User } from "lucide-react";
 import { fetchVideos, fetchSpeakers, fetchContinueWatching } from "../lib/api";
 import { VideoModal } from "../components/video/VideoModal";
@@ -16,8 +17,13 @@ export function PustakaPage() {
   const [tapisOpen, setTapisOpen] = useState(false);
   const [susunOpen, setSusunOpen] = useState(false);
 
-  const [selectedVideo, setSelectedVideo] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
+  // The player dialog is driven by the ?tonton=<id> query param (spec §8.3.1):
+  // refresh/share reopens it, browser Back closes it.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const tontonId = Number(searchParams.get("tonton")) || null;
+  const lastVideoRef = useRef(null);
 
   // Load videos from backend
   useEffect(() => {
@@ -47,17 +53,18 @@ export function PustakaPage() {
   }
 
   function openVideo(video) {
-    setSelectedVideo(video);
-    setModalOpen(true);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.set("tonton", String(video.id));
+        return next;
+      },
+      { state: { tontonPushed: true } }
+    );
   }
 
-  function openContinueWatchingItem(item) {
-    const fullVideo = videos.find((v) => v.id === item.id);
-    if (fullVideo) {
-      openVideo(fullVideo);
-      return;
-    }
-    openVideo({
+  function continueWatchingToVideo(item) {
+    return {
       id: item.id,
       title: item.title,
       duration_seconds: item.duration_seconds,
@@ -69,14 +76,50 @@ export function PustakaPage() {
         is_watched: false,
         is_favorite: false,
       },
-    });
+    };
   }
 
-  const handleCloseModal = useCallback(() => {
-    setModalOpen(false);
+  const selectedVideo = tontonId
+    ? videos.find((v) => v.id === tontonId) ||
+      (() => {
+        const item = continueWatching.find((c) => c.id === tontonId);
+        return item ? continueWatchingToVideo(item) : null;
+      })()
+    : null;
+
+  useEffect(() => {
+    if (selectedVideo) lastVideoRef.current = selectedVideo;
+  }, [selectedVideo]);
+
+  // Unknown or removed video id in the URL: drop the param once data has loaded.
+  useEffect(() => {
+    if (tontonId && !loading && !selectedVideo) {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          next.delete("tonton");
+          return next;
+        },
+        { replace: true }
+      );
+    }
+  }, [tontonId, loading, selectedVideo, setSearchParams]);
+
+  function handleCloseModal() {
+    if (location.state?.tontonPushed) {
+      navigate(-1);
+    } else {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          next.delete("tonton");
+          return next;
+        },
+        { replace: true }
+      );
+    }
     loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }
 
   function formatDuration(sec) {
     if (!sec) return "00:00";
@@ -123,7 +166,7 @@ export function PustakaPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Taip tajuk ceramah, koleksi kitab atau penceramah untuk memulakan carian"
-                className="w-full pl-12 pr-10 py-3.5 bg-white border border-border rounded-xl text-sm placeholder:text-muted-foreground/80 focus:outline-none focus:ring-2 focus:ring-brand-gold/60 shadow-sm transition-all"
+                className="w-full pl-12 pr-10 py-3.5 bg-white border border-border rounded-xl text-sm placeholder:text-muted-foreground/80 focus:outline-hidden focus:ring-2 focus:ring-brand-gold/60 shadow-xs transition-all"
               />
               {searchQuery && (
                 <button
@@ -147,8 +190,8 @@ export function PustakaPage() {
               {continueWatching.map((item) => (
                 <div
                   key={`cw-${item.id}`}
-                  onClick={() => openContinueWatchingItem(item)}
-                  className="group cursor-pointer bg-white rounded-xl overflow-hidden border border-border hover:shadow-lg hover:border-brand-gold/40 transition-all flex-shrink-0 w-64 snap-start"
+                  onClick={() => openVideo(item)}
+                  className="group cursor-pointer bg-white rounded-xl overflow-hidden border border-border hover:shadow-lg hover:border-brand-gold/40 transition-all shrink-0 w-64 snap-start"
                 >
                   <div className="relative w-full aspect-video bg-muted overflow-hidden">
                     {item.thumbnail_path ? (
@@ -332,7 +375,7 @@ export function PustakaPage() {
                 className="group cursor-pointer bg-white rounded-xl overflow-hidden border border-border hover:shadow-md hover:border-brand-emerald/30 transition-all flex flex-col"
               >
                 <div className="w-full aspect-video bg-muted/60 flex items-center justify-center relative group-hover:bg-brand-sage/40 transition-colors">
-                  <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center shadow-sm border border-border">
+                  <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center shadow-xs border border-border">
                     <User className="w-8 h-8 text-brand-emerald" />
                   </div>
                 </div>
@@ -410,7 +453,7 @@ export function PustakaPage() {
         )}
       </div>
 
-      <VideoModal video={selectedVideo} open={modalOpen} onClose={handleCloseModal} />
+      <VideoModal video={selectedVideo ?? lastVideoRef.current} open={Boolean(selectedVideo)} onClose={handleCloseModal} />
     </div>
   );
 }

@@ -319,7 +319,7 @@ def verify_safe_path(target_path: Path, allowed_root: Path) -> Path:
 *Set by the System Owner on 2026-09-28. These rules override any conflicting guidance elsewhere.*
 
 1. **shadcn/ui components only.** Every UI element must be built from official shadcn/ui components (the same components mirrored in the **Obra shadcn/ui Figma kit** used for the mockups in `docs/design/figma-ui/`). Components are added via the shadcn CLI into `frontend/src/components/ui/`. Never hand-roll an equivalent (e.g. custom dropdowns, raw `<select>`, homemade modals).
-2. **Do not edit generated component source.** Files in `components/ui/` stay as the shadcn CLI generates them. App-specific pieces (e.g. lecture card, speaker card) are built by *composing* these components in feature files.
+2. **Do not edit generated component source.** Files in `components/ui/` stay as the shadcn CLI generates them. App-specific pieces (e.g. lecture card, speaker card) are built by *composing* these components in feature files. **Sole exception:** a new *variant* may be added to a generated component's `cva` variants only if it uses theme tokens exclusively (no arbitrary values), has System Owner approval, and is logged in §8.2. Existing variants and base classes are never modified.
 3. **Visual styling comes from the theme only.** Colours, typography, radius and shadows are defined exclusively by the theme tokens (CSS variables in `frontend/src/index.css`). `className` overrides on components are limited to layout (spacing, sizing, grid/flex, positioning) — never colour, font, radius or shadow.
 4. **No arbitrary values.** No `text-[11px]`, inline hex colours, custom shadows, or other one-off styling. Use semantic token utilities (`bg-primary`, `text-muted-foreground`, …), never raw palette values.
 5. **Theme changes require the System Owner's explicit permission.** Adding, removing or changing any theme token (colour, font, radius, shadow, spacing scale) must be approved by the System Owner first, then recorded in §8.2 below.
@@ -330,11 +330,16 @@ def verify_safe_path(target_path: Path, allowed_root: Path) -> Path:
 - Fonts: `Reem Kufi` (headings), `Lato` (body), `Geist Mono` (mono).
 - Colours: background `#FAFAF9`, foreground `#022C22`, primary `#96742B`, secondary `#E6F4EA`, secondary-foreground `#14532D`, muted/border `#E5E5E5`, card `#FFFFFF`.
 - Base radius: `8px` (`0.5rem`).
+- Focus ring: `#96742B` (gold). *Deliberately differs from the Figma kit's `#D4D4D4` — System Owner decision 2026-09-29.*
+- Remaining shadcn tokens (accent, muted, muted-foreground, destructive, card/popover foregrounds, input, sidebar) take their exact hex values from `docs/design/figma-variables/shadcn-color.json`.
 
 **Approved changes:**
 | Date | Change | Approved by |
 | :--- | :--- | :--- |
 | 2026-09-28 | Add `--warning` / `--warning-foreground` tokens (for the invalid-link Alert on Tambah Ceramah) | System Owner |
+| 2026-09-29 | `--warning` = `#FFFBEB` (amber-50, surface), `--warning-foreground` = `#92400E` (amber-800, text/icon) — sampled from the "Pautan Masalah" mockup | System Owner |
+| 2026-09-29 | Keep focus ring `--ring` = `#96742B` (gold) instead of Figma's `#D4D4D4` | System Owner |
+| 2026-09-29 | Add `warning` variant to `components/ui/alert.jsx` (§8.1.2 exception): `bg-warning text-warning-foreground border-warning-foreground/30`, icon and description in `text-warning-foreground`. Border uses foreground at 30% opacity — no separate border token. Used for invalid-link Alert (Tambah Ceramah) and low-disk Alert (Urus Pustaka). | System Owner |
 
 ---
 
@@ -343,6 +348,9 @@ def verify_safe_path(target_path: Path, allowed_root: Path) -> Path:
 
 #### 8.3.1 Platform & Foundation
 - **Tailwind CSS v3 → v4** and the **current shadcn/ui CLI** (`components.json`, JSX — `tsx: false`). Required for Input Group, Button Group, Empty, Field and Spinner used in the mockups.
+- **React 18 → 19** (approved by System Owner 2026-09-29): current shadcn/ui components no longer use `forwardRef`, so on React 18 refs are dropped and `asChild` triggers / Popover / Tooltip positioning break. Video.js is compatible.
+- Legacy `brand.*` palette (`bg-brand-gold` etc.) and hard-coded `body` background are non-token styling (§8.1.3–4). They may be kept temporarily in 7.1 so current pages keep rendering, and must be fully removed by the end of 7.3.
+- Tailwind v4 renamed utilities used by the current pages (`shadow-sm`→`shadow-xs`, `focus:outline-none`→`focus:outline-hidden`, `flex-shrink-0`→`shrink-0`, `backdrop-blur-sm`→`backdrop-blur-xs`, bare `rounded`→`rounded-sm`); migrate them with the upgrade (`npx @tailwindcss/upgrade`, repo is now under git). Add **Geist Mono** to the Google Fonts import (currently missing).
 - Theme tokens from §8.2 ported into Tailwind v4 CSS variables unchanged (exact hex values preserved). Light mode only this phase; token structure must allow dark mode to be added later (`docs/design/figma-variables/shadcn-color-dark.json`).
 - **React Router** replaces the tab state in `App.jsx`:
 
@@ -369,7 +377,7 @@ def verify_safe_path(target_path: Path, allowed_root: Path) -> Path:
 | Profile (CN) menu | Avatar + Dropdown Menu |
 | Top navigation incl. "Urus Pustaka ⌄" | Navigation Menu (desktop), Sheet (phone) |
 | Upload cards | Card + Progress + Button (`secondary`) |
-| Invalid-link warning | Alert (uses approved `--warning` token) |
+| Invalid-link warning | Alert `variant="warning"` (approved variant, §8.2) |
 | Sunting Butiran Ceramah | Dialog + Field + Input Group |
 | Koleksi Kitab / Penceramah pickers with "+ Tambah '…'" | Combobox (Popover + Command) |
 | Duration on thumbnail | Badge |
@@ -421,7 +429,7 @@ def verify_safe_path(target_path: Path, allowed_root: Path) -> Path:
 
 #### 8.3.8 Urus Pustaka (`/urus`) — redesign of the live management screen
 The "Fungsi Baharu Sedang Dibangunkan" mockup is obsolete. Redesign keeps all live functionality:
-- **Storage health** Card: 2TB usage Progress, free space, low-disk warning Alert.
+- **Storage health** Card: 2TB usage Progress, free space, low-disk Alert `variant="warning"`.
 - **Tabs:** *Ceramah* | *Koleksi Kitab* | *Penceramah* (also reachable from the "Urus Pustaka ⌄" nav menu).
   - *Ceramah:* Table with search (Input Group) and Penceramah filter (Select/Combobox); row actions via Dropdown Menu: Sunting (opens §8.3.7 dialog), Cuba Semula (failed items), Padam (Alert Dialog).
   - *Koleksi Kitab:* Table with video counts; Sunting, Gabung (merge), Padam.
@@ -458,3 +466,14 @@ The "Fungsi Baharu Sedang Dibangunkan" mockup is obsolete. Redesign keeps all li
 - ~~O5 — Title length~~ **Resolved 2026-09-28:** 2-line clamp on cards + 200-char limit in Sunting form (§8.3.4, §8.3.7).
 
 **All open items resolved. Requirements finalized pending System Owner's go-ahead to start coding.**
+
+### 8.4 Phase 7.1 Implementation Notes (2026-09-29)
+*Facts for future agents; no requirement changes.*
+- **Versions:** React 19.3, Tailwind 4.3 via `@tailwindcss/vite` (no PostCSS config, no `tailwind.config.js` — theme lives in `frontend/src/index.css`), Vite kept at 5.x (`@vitejs/plugin-react` 4.x; v6+ needs Vite 8), `react-router` (v7 API; import from `"react-router"`), `lucide-react` 1.x.
+- **shadcn CLI:** `components.json` uses style `radix-vega` (classic shadcn look; the CLI now requires choosing a preset) with `tsx: false`, alias `@/` → `src/` (`jsconfig.json` + Vite alias). Generated components import `cn` from the official `cn` npm package (shadcn-maintained); `src/lib/utils.js` still exports its own `cn` for the legacy pages. Combobox pulls in `@base-ui/react` and `cmdk` — that is how the CLI builds it.
+- **Adding components:** `npx shadcn@latest add <name>` from `frontend/`. The CLI's `init` also rewrites `index.css` with its own neutral tokens and adds Inter — do not re-run `init`; if it does happen, restore the tokens from git.
+- **Tokens:** `:root` in `index.css` holds exact hex values from §8.2 (no HSL triples any more), mapped to utilities with `@theme inline`. Added `--sidebar-*` from the Figma light set. No `--destructive-foreground` (not part of current shadcn tokens) and no `.dark` block yet — add from `shadcn-color-dark.json` when dark mode is scheduled. Radius scale follows `border-radii.json` (4/6/8/12/16/20/26). Tailwind's default shadow scale already equals `shadows.json`.
+- **Temporary legacy styling** (remove by end of 7.3, §8.3.1): `--color-brand-*` colours and the custom `container` utility in `index.css`; the old pages still use `bg-brand-*`, arbitrary sizes and hand-rolled controls.
+- **Lucide v1** dropped brand icons (`Youtube`); the legacy `VideoModal` uses `CirclePlay` instead.
+- **Routing:** `/penceramah/:id`, `/koleksi/:id` and `/cari` currently render the unfiltered library page until their views are built in 7.3. The `?tonton=<id>` param is handled inside `PustakaPage` for now (opening pushes a history entry so Back closes it; a direct/refreshed URL reopens it; an unknown id is stripped). It moves to an app-level dialog in 7.3. `GET /api/videos/{id}` returns the raw `Video` without speaker/collection/progress, so the dialog resolves the id from the loaded list.
+- **Fonts:** Geist Mono added to the Google Fonts `<link>` in `index.html`; the duplicate CSS `@import` was removed. Lato has no 500/600 weight, so `font-medium`/`font-semibold` fall back to the nearest available weight.

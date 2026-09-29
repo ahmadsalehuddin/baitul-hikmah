@@ -1,52 +1,128 @@
-@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,400&family=Reem+Kufi:wght@400;500;600;700&display=swap');
+@import 'tailwindcss';
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@custom-variant dark (&:is(.dark *));
+
+/*
+  Theme tokens — Phase 7 (docs/architecture-specs.md §8.2).
+  Exact hex values from docs/design/figma-variables/shadcn-color.json.
+  Changing any token requires the System Owner's permission (§8.1.5).
+*/
+:root {
+  --background: #FAFAF9;
+  --foreground: #022C22;
+  --card: #FFFFFF;
+  --card-foreground: #0A0A0A;
+  --popover: #FFFFFF;
+  --popover-foreground: #0A0A0A;
+  --primary: #96742B;
+  --primary-foreground: #FFFFFF;
+  --secondary: #E6F4EA;
+  --secondary-foreground: #14532D;
+  --muted: #F5F5F5;
+  --muted-foreground: #737373;
+  --accent: #F5F5F5;
+  --accent-foreground: #022C22;
+  --destructive: #DC2626;
+  --border: #E5E5E5;
+  --input: #E5E5E5;
+  /* Gold focus ring — approved deviation from Figma's #D4D4D4 (2026-09-29). */
+  --ring: #96742B;
+
+  /* Approved additions (2026-09-29): invalid-link and low-disk Alerts. */
+  --warning: #FFFBEB;
+  --warning-foreground: #92400E;
+
+  --sidebar: #FAFAFA;
+  --sidebar-foreground: #404040;
+  --sidebar-primary: #404040;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F5F5F5;
+  --sidebar-accent-foreground: #171717;
+  --sidebar-border: #E5E5E5;
+  --sidebar-ring: #D4D4D4;
+
+  --radius: 0.5rem;
+}
+
+@theme inline {
+  --font-heading: 'Reem Kufi', sans-serif;
+  --font-sans: 'Lato', sans-serif;
+  --font-mono: 'Geist Mono', monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Radius scale from docs/design/figma-variables/border-radii.json (4/6/8/12/16/20/26). */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 18px);
+}
+
+/*
+  TEMPORARY (§8.3.1): legacy brand palette and container utility, kept only so the
+  pre-redesign pages keep rendering during 7.1. Must be removed by the end of 7.3.
+*/
+@theme {
+  --color-brand-gold: #96742b;
+  --color-brand-emerald: #022c22;
+  --color-brand-sage: #e6f4ea;
+  --color-brand-forest: #14532d;
+  --color-brand-stone: #fafaf9;
+}
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+  @media (width >= --theme(--breakpoint-sm)) {
+    max-width: none;
+  }
+  @media (width >= 1400px) {
+    max-width: 1400px;
+  }
+}
 
 @layer base {
-  :root {
-    /* Exact Figma Shadcn Tokens */
-    --background: 60 9% 98%;          /* #FAFAF9 Warm Stone */
-    --foreground: 165 94% 9%;         /* #022C22 Deep Emerald */
-
-    --card: 0 0% 100%;                /* #FFFFFF */
-    --card-foreground: 0 0% 4%;       /* #0A0A0A */
-
-    --popover: 0 0% 100%;             /* #FFFFFF */
-    --popover-foreground: 0 0% 4%;    /* #0A0A0A */
-
-    --primary: 42 55% 38%;            /* #96742B Islamic Antique Gold */
-    --primary-foreground: 0 0% 100%;  /* #FFFFFF */
-
-    --secondary: 136 42% 93%;         /* #E6F4EA Soft Sage */
-    --secondary-foreground: 142 61% 20%; /* #14532D Forest Green */
-
-    --muted: 0 0% 96%;                /* #F5F5F5 */
-    --muted-foreground: 0 0% 45%;     /* #737373 */
-
-    --accent: 0 0% 96%;               /* #F5F5F5 */
-    --accent-foreground: 165 94% 9%;  /* #022C22 */
-
-    --destructive: 0 72% 51%;         /* #DC2626 */
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 0 0% 90%;               /* #E5E5E5 */
-    --input: 0 0% 90%;                /* #E5E5E5 */
-    --ring: 42 55% 38%;               /* #96742B */
-
-    --radius: 0.5rem;                 /* 8px base radius */
-  }
-
   * {
-    @apply border-border;
+    @apply border-border outline-ring/50;
   }
-
+  html {
+    @apply font-sans;
+  }
   body {
-    @apply bg-background text-foreground font-sans antialiased min-h-screen selection:bg-brand-gold selection:text-white;
-    background-color: #FAFAF9;
+    @apply bg-background text-foreground antialiased min-h-screen selection:bg-primary selection:text-primary-foreground;
   }
-
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading tracking-tight text-foreground;
   }

@@ -242,7 +242,7 @@ export const VideoPlayer = React.forwardRef(function VideoPlayer(
         </div>
 
         {mode === "audio" && (
-          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-brand-emerald via-[#0a3d2f] to-black">
+          <div className="absolute inset-0 flex items-center justify-center bg-linear-to-br from-brand-emerald via-[#0a3d2f] to-black">
             <div
               className="absolute inset-0 opacity-[0.08] bg-repeat"
               style={{ backgroundImage: "url('/background-pattern.svg')", backgroundSize: "300px" }}
@@ -273,7 +273,7 @@ export const VideoPlayer = React.forwardRef(function VideoPlayer(
           </div>
         )}
 
-        <div className="absolute top-3 right-3 z-20 flex items-center gap-1 rounded-full bg-black/50 backdrop-blur-sm p-1">
+        <div className="absolute top-3 right-3 z-20 flex items-center gap-1 rounded-full bg-black/50 backdrop-blur-xs p-1">
           <button type="button" onClick={() => setMode("video")} className={modeButtonClass(mode === "video")}>
             <VideoIcon className="w-3.5 h-3.5" />
             Video

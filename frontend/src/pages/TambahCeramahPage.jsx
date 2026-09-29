@@ -213,7 +213,7 @@ export function TambahCeramahPage({ onGoHome }) {
           {/* Low disk space warning banner */}
           {lowDiskSpace && (
             <div className="mt-6 max-w-2xl mx-auto p-4 bg-red-50 border border-red-300 rounded-xl text-red-900 flex items-start gap-3 text-left animate-in fade-in">
-              <HardDriveDownload className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+              <HardDriveDownload className="w-5 h-5 text-red-600 mt-0.5 shrink-0" />
               <div>
                 <p className="font-semibold text-xs sm:text-sm">Ruang storan pada cakera 2TB tidak mencukupi</p>
                 <p className="text-xs text-red-800/90 mt-0.5">
@@ -235,7 +235,7 @@ export function TambahCeramahPage({ onGoHome }) {
                 onChange={(e) => setUrlsInput(e.target.value)}
                 disabled={lowDiskSpace}
                 placeholder="Tampal sehingga 5 pautan YouTube, setiap satu pada baris baharu..."
-                className="w-full pl-12 pr-4 py-3.5 bg-white border border-border rounded-xl text-sm placeholder:text-muted-foreground/80 focus:outline-none focus:ring-2 focus:ring-brand-gold/60 shadow-sm resize-none disabled:opacity-60 disabled:bg-muted"
+                className="w-full pl-12 pr-4 py-3.5 bg-white border border-border rounded-xl text-sm placeholder:text-muted-foreground/80 focus:outline-hidden focus:ring-2 focus:ring-brand-gold/60 shadow-xs resize-none disabled:opacity-60 disabled:bg-muted"
               />
             </div>
 
@@ -257,7 +257,7 @@ export function TambahCeramahPage({ onGoHome }) {
               <button
                 type="button"
                 onClick={handleClear}
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-border hover:bg-muted text-foreground rounded-lg text-xs font-semibold shadow-sm transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-border hover:bg-muted text-foreground rounded-lg text-xs font-semibold shadow-xs transition-colors"
               >
                 <Trash2 className="w-3.5 h-3.5 opacity-70" />
                 <span>Kosongkan Pautan</span>
@@ -267,7 +267,7 @@ export function TambahCeramahPage({ onGoHome }) {
                 type="button"
                 disabled={uploadDisabled}
                 onClick={handleUpload}
-                className="flex items-center gap-2 px-5 py-2 bg-brand-gold hover:bg-brand-gold/90 text-white rounded-lg text-xs font-semibold shadow-sm transition-all disabled:opacity-50"
+                className="flex items-center gap-2 px-5 py-2 bg-brand-gold hover:bg-brand-gold/90 text-white rounded-lg text-xs font-semibold shadow-xs transition-all disabled:opacity-50"
               >
                 <Upload className="w-3.5 h-3.5" />
                 <span>{loading ? "Memproses..." : "Muat Naik"}</span>
@@ -280,7 +280,7 @@ export function TambahCeramahPage({ onGoHome }) {
         {invalidUrls.length > 0 && (
           <div className="max-w-2xl mx-auto mb-10 p-4 bg-amber-50/70 border border-amber-300 rounded-xl text-amber-900 animate-in fade-in">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+              <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
               <div>
                 <p className="font-semibold text-xs sm:text-sm">
                   {invalidUrls.length} pautan tidak sah/ditemui
@@ -315,7 +315,7 @@ export function TambahCeramahPage({ onGoHome }) {
               {downloadTasks.failed.map((video) => (
                 <div
                   key={video.id}
-                  className="bg-white rounded-xl border border-red-200 p-4 flex flex-col gap-2 shadow-sm"
+                  className="bg-white rounded-xl border border-red-200 p-4 flex flex-col gap-2 shadow-xs"
                 >
                   <h4 className="font-heading font-semibold text-sm text-foreground line-clamp-1">{video.title}</h4>
                   <p className="text-xs text-red-700/90 line-clamp-2 font-mono">
@@ -355,7 +355,7 @@ export function TambahCeramahPage({ onGoHome }) {
             {[...downloadTasks.active, ...downloadTasks.recent].map((video) => (
               <div
                 key={video.id}
-                className="bg-white rounded-2xl overflow-hidden border border-border shadow-sm flex flex-col hover:border-border/80 transition-all"
+                className="bg-white rounded-2xl overflow-hidden border border-border shadow-xs flex flex-col hover:border-border/80 transition-all"
               >
                 {/* Thumbnail Preview Area */}
                 <div className="relative w-full aspect-video bg-neutral-200">

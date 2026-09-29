@@ -71,7 +71,7 @@ function StorageHealthCard({ storage }) {
   const barColor = percent > 90 ? "bg-destructive" : percent > 75 ? "bg-amber-500" : "bg-brand-gold";
 
   return (
-    <div className="bg-white rounded-2xl border border-border p-6 shadow-sm">
+    <div className="bg-white rounded-2xl border border-border p-6 shadow-xs">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl bg-brand-sage/60 flex items-center justify-center text-brand-emerald">
@@ -154,7 +154,7 @@ function AddEntityDialog({ open, onClose, speakers, onCreated }) {
 
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
-      <DialogContent className="max-w-md p-0" showClose={false}>
+      <DialogContent className="max-w-md p-0" showCloseButton={false}>
         <DialogHeader className="flex-row items-center justify-between px-6 py-4 border-b border-border">
           <DialogTitle>Tambah Penceramah atau Koleksi</DialogTitle>
           <button onClick={onClose} className="p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted">
@@ -168,7 +168,7 @@ function AddEntityDialog({ open, onClose, speakers, onCreated }) {
               type="button"
               onClick={() => setKind("collection")}
               className={`py-2 rounded-lg text-xs font-semibold transition-colors ${
-                kind === "collection" ? "bg-white shadow-sm text-brand-emerald" : "text-muted-foreground"
+                kind === "collection" ? "bg-white shadow-xs text-brand-emerald" : "text-muted-foreground"
               }`}
             >
               Koleksi Kitab
@@ -177,7 +177,7 @@ function AddEntityDialog({ open, onClose, speakers, onCreated }) {
               type="button"
               onClick={() => setKind("speaker")}
               className={`py-2 rounded-lg text-xs font-semibold transition-colors ${
-                kind === "speaker" ? "bg-white shadow-sm text-brand-emerald" : "text-muted-foreground"
+                kind === "speaker" ? "bg-white shadow-xs text-brand-emerald" : "text-muted-foreground"
               }`}
             >
               Penceramah
@@ -193,7 +193,7 @@ function AddEntityDialog({ open, onClose, speakers, onCreated }) {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder={kind === "collection" ? "cth. Riyadhus Solihin" : "cth. Ustaz Azhar Idrus"}
-              className="w-full px-3.5 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/60"
+              className="w-full px-3.5 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-hidden focus:ring-2 focus:ring-brand-gold/60"
             />
           </div>
 
@@ -203,7 +203,7 @@ function AddEntityDialog({ open, onClose, speakers, onCreated }) {
               <select
                 value={speakerId}
                 onChange={(e) => setSpeakerId(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/60"
+                className="w-full px-3.5 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-hidden focus:ring-2 focus:ring-brand-gold/60"
               >
                 <option value="">Tiada / Pelbagai Penceramah</option>
                 {speakers.map((s) => (
@@ -221,7 +221,7 @@ function AddEntityDialog({ open, onClose, speakers, onCreated }) {
               rows={2}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-white border border-border rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand-gold/60"
+              className="w-full px-3.5 py-2.5 bg-white border border-border rounded-xl text-sm resize-none focus:outline-hidden focus:ring-2 focus:ring-brand-gold/60"
             />
           </div>
 
@@ -235,7 +235,7 @@ function AddEntityDialog({ open, onClose, speakers, onCreated }) {
           <button
             onClick={handleSubmit}
             disabled={saving}
-            className="px-5 py-2 text-xs font-semibold text-white bg-brand-gold hover:bg-brand-gold/90 rounded-lg shadow-sm disabled:opacity-50"
+            className="px-5 py-2 text-xs font-semibold text-white bg-brand-gold hover:bg-brand-gold/90 rounded-lg shadow-xs disabled:opacity-50"
           >
             {saving ? "Menyimpan..." : "Simpan"}
           </button>
@@ -280,7 +280,7 @@ function RenameDialog({ entity, kind, onClose, onSaved }) {
 
   return (
     <Dialog open={!!entity} onOpenChange={(next) => !next && onClose()}>
-      <DialogContent className="max-w-sm p-0" showClose={false}>
+      <DialogContent className="max-w-sm p-0" showCloseButton={false}>
         <DialogHeader className="flex-row items-center justify-between px-6 py-4 border-b border-border">
           <DialogTitle>{kind === "collection" ? "Sunting Koleksi Kitab" : "Sunting Penceramah"}</DialogTitle>
           <button onClick={onClose} className="p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted">
@@ -293,7 +293,7 @@ function RenameDialog({ entity, kind, onClose, onSaved }) {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-3.5 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/60"
+            className="w-full px-3.5 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-hidden focus:ring-2 focus:ring-brand-gold/60"
           />
           {error && <p className="text-xs text-destructive font-medium mt-2">{error}</p>}
         </div>
@@ -304,7 +304,7 @@ function RenameDialog({ entity, kind, onClose, onSaved }) {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="px-5 py-2 text-xs font-semibold text-white bg-brand-gold hover:bg-brand-gold/90 rounded-lg shadow-sm disabled:opacity-50"
+            className="px-5 py-2 text-xs font-semibold text-white bg-brand-gold hover:bg-brand-gold/90 rounded-lg shadow-xs disabled:opacity-50"
           >
             {saving ? "Menyimpan..." : "Simpan"}
           </button>
@@ -347,7 +347,7 @@ function MergeCollectionDialog({ source, collections, onClose, onMerged }) {
 
   return (
     <Dialog open={!!source} onOpenChange={(next) => !next && onClose()}>
-      <DialogContent className="max-w-sm p-0" showClose={false}>
+      <DialogContent className="max-w-sm p-0" showCloseButton={false}>
         <DialogHeader className="flex-row items-center justify-between px-6 py-4 border-b border-border">
           <DialogTitle>Gabungkan Koleksi</DialogTitle>
           <button onClick={onClose} className="p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted">
@@ -364,7 +364,7 @@ function MergeCollectionDialog({ source, collections, onClose, onMerged }) {
             <select
               value={targetId}
               onChange={(e) => setTargetId(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/60"
+              className="w-full px-3.5 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-hidden focus:ring-2 focus:ring-brand-gold/60"
             >
               <option value="">Pilih koleksi sasaran...</option>
               {otherCollections.map((c) => (
@@ -381,7 +381,7 @@ function MergeCollectionDialog({ source, collections, onClose, onMerged }) {
           <button
             onClick={handleMerge}
             disabled={saving}
-            className="px-5 py-2 text-xs font-semibold text-white bg-brand-gold hover:bg-brand-gold/90 rounded-lg shadow-sm disabled:opacity-50"
+            className="px-5 py-2 text-xs font-semibold text-white bg-brand-gold hover:bg-brand-gold/90 rounded-lg shadow-xs disabled:opacity-50"
           >
             {saving ? "Menggabungkan..." : "Gabungkan"}
           </button>
@@ -413,7 +413,7 @@ function ConfirmDeleteDialog({ target, title, description, onClose, onConfirm })
 
   return (
     <Dialog open={!!target} onOpenChange={(next) => !next && onClose()}>
-      <DialogContent className="max-w-sm p-0" showClose={false}>
+      <DialogContent className="max-w-sm p-0" showCloseButton={false}>
         <div className="p-6 text-center">
           <div className="w-12 h-12 rounded-full bg-red-100 text-destructive flex items-center justify-center mx-auto mb-4">
             <AlertTriangle className="w-6 h-6" />
@@ -429,7 +429,7 @@ function ConfirmDeleteDialog({ target, title, description, onClose, onConfirm })
           <button
             onClick={handleConfirm}
             disabled={busy}
-            className="px-5 py-2 text-xs font-semibold text-white bg-destructive hover:bg-destructive/90 rounded-lg shadow-sm disabled:opacity-50"
+            className="px-5 py-2 text-xs font-semibold text-white bg-destructive hover:bg-destructive/90 rounded-lg shadow-xs disabled:opacity-50"
           >
             {busy ? "Memadam..." : "Padam"}
           </button>
@@ -576,7 +576,7 @@ export function UrusPustakaPage({ onGoHome }) {
             <h2 className="font-heading text-xl font-bold text-foreground">Koleksi Kitab & Penceramah</h2>
             <button
               onClick={() => setAddEntityOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-brand-gold hover:bg-brand-gold/90 text-white rounded-lg text-xs font-semibold shadow-sm transition-all"
+              className="flex items-center gap-2 px-4 py-2 bg-brand-gold hover:bg-brand-gold/90 text-white rounded-lg text-xs font-semibold shadow-xs transition-all"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Tambah Penceramah atau Koleksi</span>
@@ -585,7 +585,7 @@ export function UrusPustakaPage({ onGoHome }) {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Collections */}
-            <div className="bg-white rounded-2xl border border-border shadow-sm">
+            <div className="bg-white rounded-2xl border border-border shadow-xs">
               <div className="flex items-center gap-2 px-5 py-3.5 border-b border-border">
                 <BookOpen className="w-4 h-4 text-brand-emerald" />
                 <h3 className="font-heading font-semibold text-sm text-foreground">Koleksi Kitab ({collections.length})</h3>
@@ -632,7 +632,7 @@ export function UrusPustakaPage({ onGoHome }) {
             </div>
 
             {/* Speakers */}
-            <div className="bg-white rounded-2xl border border-border shadow-sm">
+            <div className="bg-white rounded-2xl border border-border shadow-xs">
               <div className="flex items-center gap-2 px-5 py-3.5 border-b border-border">
                 <Users className="w-4 h-4 text-brand-emerald" />
                 <h3 className="font-heading font-semibold text-sm text-foreground">Penceramah ({speakers.length})</h3>
@@ -680,13 +680,13 @@ export function UrusPustakaPage({ onGoHome }) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Cari tajuk ceramah..."
-                className="w-full pl-10 pr-4 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/60"
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-hidden focus:ring-2 focus:ring-brand-gold/60"
               />
             </div>
             <select
               value={filterSpeakerId}
               onChange={(e) => setFilterSpeakerId(e.target.value)}
-              className="px-3.5 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/60"
+              className="px-3.5 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-hidden focus:ring-2 focus:ring-brand-gold/60"
             >
               <option value="">Semua Penceramah</option>
               {speakers.map((s) => (
@@ -696,7 +696,7 @@ export function UrusPustakaPage({ onGoHome }) {
             <select
               value={filterCollectionId}
               onChange={(e) => setFilterCollectionId(e.target.value)}
-              className="px-3.5 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/60"
+              className="px-3.5 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-hidden focus:ring-2 focus:ring-brand-gold/60"
             >
               <option value="">Semua Koleksi</option>
               {collections.map((c) => (
@@ -705,7 +705,7 @@ export function UrusPustakaPage({ onGoHome }) {
             </select>
           </div>
 
-          <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
+          <div className="bg-white rounded-2xl border border-border shadow-xs overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
