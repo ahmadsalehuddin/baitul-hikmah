@@ -105,7 +105,7 @@ function UrusPustaka() {
           </Button>
         </div>
 
-        <TabsContent value="ceramah">
+        <TabsContent value="ceramah" className="motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-1 motion-safe:duration-200">
           <VideoTab
             loaded={loaded}
             videos={library.videoItems}
@@ -115,10 +115,10 @@ function UrusPustaka() {
             handlers={videoHandlers}
           />
         </TabsContent>
-        <TabsContent value="koleksi">
+        <TabsContent value="koleksi" className="motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-1 motion-safe:duration-200">
           <CollectionTab collections={collections} handlers={collectionHandlers} />
         </TabsContent>
-        <TabsContent value="penceramah">
+        <TabsContent value="penceramah" className="motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-1 motion-safe:duration-200">
           <SpeakerTab speakers={speakers} handlers={speakerHandlers} />
         </TabsContent>
       </Tabs>
