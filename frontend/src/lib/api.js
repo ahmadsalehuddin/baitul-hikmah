@@ -190,6 +190,27 @@ export async function updateSpeaker(speakerId, payload) {
   return data;
 }
 
+export async function deleteSpeaker(speakerId) {
+  const res = await apiFetch(`/speakers/${speakerId}`, { method: "DELETE" });
+  const data = await res.json();
+  if (!res.ok) throw data;
+  return data;
+}
+
+export async function mergeSpeakers(sourceSpeakerId, targetSpeakerId) {
+  const res = await apiFetch(`/speakers/merge`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      source_speaker_id: sourceSpeakerId,
+      target_speaker_id: targetSpeakerId,
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw data;
+  return data;
+}
+
 export async function createCollection(payload) {
   const res = await apiFetch(`/collections`, {
     method: "POST",

@@ -170,6 +170,10 @@ class SpeakerUpdateRequest(SQLModel):
     bio: Optional[str] = None
     avatar_url: Optional[str] = None
 
+class SpeakerMergeRequest(SQLModel):
+    source_speaker_id: int
+    target_speaker_id: int
+
 class CollectionCreateRequest(SQLModel):
     title: str
     description: Optional[str] = None

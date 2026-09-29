@@ -17,7 +17,15 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEntities } from "@/hooks/use-entities";
 import { useLibrary } from "@/hooks/use-library";
-import { deleteCollection, deleteLocation, deleteVideo, fetchStorageMetrics, getDownloadTasks, retryVideoDownload } from "@/lib/api";
+import {
+  deleteCollection,
+  deleteLocation,
+  deleteSpeaker,
+  deleteVideo,
+  fetchStorageMetrics,
+  getDownloadTasks,
+  retryVideoDownload,
+} from "@/lib/api";
 
 const TABS = ["ceramah", "koleksi", "penceramah", "lokasi"];
 
@@ -33,6 +41,11 @@ const DELETE_CONFIRMATIONS = {
     title: "Padam Koleksi Kitab?",
     description: (c) => `Koleksi “${c.title}” akan dipadam secara kekal. Tindakan ini hanya boleh dilakukan jika koleksi tidak mempunyai ceramah.`,
     remove: deleteCollection,
+  },
+  speaker: {
+    title: "Padam Penceramah?",
+    description: (s) => `Penceramah “${s.name}” akan dipadam secara kekal. Tindakan ini hanya boleh dilakukan jika penceramah tidak mempunyai ceramah atau koleksi kitab.`,
+    remove: deleteSpeaker,
   },
   location: {
     title: "Padam Lokasi?",
@@ -111,9 +124,17 @@ function UrusPustaka() {
     }),
     []
   );
-  const speakerHandlers = useMemo(() => ({ onRename: (entity) => setRenaming({ entity, kind: "speaker" }) }), []);
+  const speakerHandlers = useMemo(
+    () => ({
+      onRename: (entity) => setRenaming({ entity, kind: "speaker" }),
+      onMerge: (entity) => setMerging({ entity, kind: "speaker" }),
+      onDelete: (entity) => setDeletingEntity({ entity, kind: "speaker" }),
+    }),
+    []
+  );
 
   const addButton = ADD_BUTTONS[tab];
+  const mergeLists = { collection: collections, speaker: speakers, location: locations };
 
   function selectTab(next) {
     setParams({ tab: next }, { replace: true });
@@ -204,7 +225,7 @@ function UrusPustaka() {
         <MergeDialog
           source={merging.entity}
           kind={merging.kind}
-          entities={merging.kind === "location" ? locations : collections}
+          entities={mergeLists[merging.kind]}
           onClose={() => setMerging(null)}
           onMerged={() => {
             reloadEntities();

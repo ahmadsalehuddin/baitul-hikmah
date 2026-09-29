@@ -200,7 +200,8 @@ This living document tracks the status of all activities across the project, cle
 - [x] **Claude:** One-off backfill script `backend/scripts/backfill_location.py` (backs up the DB first; idempotent; `--dry-run`). Verified on a copy of the live DB: 66 linked (42 / 21 / 3), 156 left empty. **Not yet run on the live DB — runs at deploy.**
 - [x] **Claude:** Best-effort auto-fill in `batch-fetch` (known-name match, then place-keyword segment); never blocks a download.
 - [x] **Claude:** Spec implementation notes written (§8.5).
-- [x] **Claude (bug found while testing, fixed):** *Gabung* on Koleksi Kitab silently orphaned the moved videos (their `collection_id` became empty). Same fix applied to the new Lokasi merge. Details in §8.5 notes. **The live library may already contain videos orphaned by past merges — see the note; needs a System Owner decision.**
+- [x] **Claude (bug found while testing, fixed):** *Gabung* on Koleksi Kitab silently orphaned the moved videos (their `collection_id` became empty). Same fix applied to the new Lokasi merge. Details in §8.5 notes. Checked the live DB afterwards: no videos were orphaned by past merges.
 - [x] **Claude:** Deployed 2026-09-29 (commits `23d1cb4` merge fix, `8af8820` Lokasi; no downloads were running; DB backed up first as `baitul_hikmah.db.bak-pre-lokasi-*`). Backfill run on the live DB: 66 videos linked (Masjid Al Ghaffar Jasin 42, Madrasah Al Ikhlas 21, Masjid As Sobirin 3), 156 left empty; its own backup is `baitul_hikmah.db.bak-20260929-180814`.
+- [x] **Claude (System Owner request 2026-09-29):** Penceramah tab: **Gabung** and **Padam** (API `DELETE /speakers/{id}`, `POST /speakers/merge`; Padam refused while the speaker has ceramah or koleksi kitab). Spec §8.5 "Penceramah Padam / Gabung". Committed; deploy status below.
 - [ ] **User:** Review on the live site.
 

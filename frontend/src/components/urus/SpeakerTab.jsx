@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Pencil, Users } from "lucide-react";
+import { Combine, Pencil, Trash2, Users } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
 import { RowActions } from "@/components/urus/RowActions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,10 +16,23 @@ function SpeakerAvatar({ speaker }) {
   );
 }
 
-/** Penceramah tab: Table (tablet+) or Card list (phone) with Sunting. */
+/** Penceramah tab: Table (tablet+) or Card list (phone) with Sunting / Gabung / Padam. */
 export function SpeakerTab({ speakers, handlers }) {
   const rows = useMemo(() => [...speakers].sort((a, b) => a.name.localeCompare(b.name, "ms")), [speakers]);
-  const actionsFor = (s) => [{ label: "Sunting", icon: Pencil, onSelect: () => handlers.onRename(s) }];
+  const actionsFor = (s) => {
+    const unused = s.video_count === 0 && s.collection_count === 0;
+    return [
+      { label: "Sunting", icon: Pencil, onSelect: () => handlers.onRename(s) },
+      { label: "Gabung", icon: Combine, onSelect: () => handlers.onMerge(s) },
+      {
+        label: unused ? "Padam" : "Padam (penceramah digunakan)",
+        icon: Trash2,
+        destructive: true,
+        disabled: !unused,
+        onSelect: () => handlers.onDelete(s),
+      },
+    ];
+  };
 
   if (rows.length === 0) {
     return <EmptyState icon={Users} title="Belum Ada Penceramah" description="Tambah penceramah baharu menggunakan butang di atas." />;

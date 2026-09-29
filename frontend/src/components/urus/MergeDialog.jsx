@@ -6,12 +6,16 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
-import { mergeCollections, mergeLocations } from "@/lib/api";
+import { mergeCollections, mergeLocations, mergeSpeakers } from "@/lib/api";
 
 const KINDS = {
   collection: {
     title: "Gabungkan Koleksi", noun: "koleksi", placeholder: "Pilih koleksi sasaran", failure: "Gagal menggabungkan koleksi.",
     read: (e) => e.title, merge: mergeCollections,
+  },
+  speaker: {
+    title: "Gabungkan Penceramah", noun: "penceramah", placeholder: "Pilih penceramah sasaran", failure: "Gagal menggabungkan penceramah.",
+    read: (e) => e.name, merge: mergeSpeakers,
   },
   location: {
     title: "Gabungkan Lokasi", noun: "lokasi", placeholder: "Pilih lokasi sasaran", failure: "Gagal menggabungkan lokasi.",
@@ -20,8 +24,8 @@ const KINDS = {
 };
 
 /**
- * Gabung: move every ceramah of `source` into another entry of the same `kind` (`"collection"` or
- * `"location"`), then delete `source`. `entities` is the full list of that kind. Render while merging.
+ * Gabung: move every ceramah of `source` into another entry of the same `kind` (`"collection"`,
+ * `"speaker"` or `"location"`), then delete `source`. `entities` is the full list of that kind. Render while merging.
  */
 export function MergeDialog({ source, kind, entities, onClose, onMerged }) {
   const config = KINDS[kind];

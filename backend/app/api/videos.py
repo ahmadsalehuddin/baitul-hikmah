@@ -2,13 +2,13 @@ import asyncio
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request, UploadFile, File, status
 from fastapi.concurrency import run_in_threadpool
-from sqlmodel import Session, select, update, or_, desc, asc
+from sqlmodel import Session, select, update, delete, func, or_, desc, asc
 from app.core.database import get_session
 from app.core.auth import get_optional_user, require_admin
 from app.models.schema import (
-    User, Video, Speaker, Collection, Location, VideoStatus, UserVideoProgress,
+    User, Video, Speaker, Collection, Location, VideoStatus, UserVideoProgress, UserFavoriteSpeaker,
     BatchFetchRequest, VideoUpdateRequest,
-    SpeakerCreateRequest, SpeakerUpdateRequest,
+    SpeakerCreateRequest, SpeakerUpdateRequest, SpeakerMergeRequest,
     CollectionCreateRequest, CollectionUpdateRequest, CollectionMergeRequest,
 )
 from app.services.downloader import (
@@ -581,6 +581,78 @@ async def update_speaker(
     session.commit()
     session.refresh(speaker)
     return speaker
+
+
+@router.delete("/speakers/{speaker_id}")
+async def delete_speaker(
+    speaker_id: int,
+    current_user: User = Depends(require_admin),
+    session: Session = Depends(get_session)
+):
+    speaker = session.get(Speaker, speaker_id)
+    if not speaker:
+        raise HTTPException(status_code=404, detail="Penceramah tidak ditemui")
+
+    video_count = session.exec(select(func.count(Video.id)).where(Video.speaker_id == speaker_id)).one()
+    collection_count = session.exec(select(func.count(Collection.id)).where(Collection.speaker_id == speaker_id)).one()
+    if video_count or collection_count:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"Tidak boleh memadam penceramah ini kerana masih ada {video_count} ceramah dan "
+                f"{collection_count} koleksi kitab terikat. Sila alihkan atau gabungkan penceramah terlebih dahulu."
+            )
+        )
+
+    # Users' "penceramah kegemaran" marks go with the speaker.
+    session.exec(delete(UserFavoriteSpeaker).where(UserFavoriteSpeaker.speaker_id == speaker_id))
+    session.delete(speaker)
+    session.commit()
+    return {"status": "success", "message": "Penceramah berjaya dipadam."}
+
+
+@router.post("/speakers/merge")
+async def merge_speakers(
+    payload: SpeakerMergeRequest,
+    current_user: User = Depends(require_admin),
+    session: Session = Depends(get_session)
+):
+    if payload.source_speaker_id == payload.target_speaker_id:
+        raise HTTPException(status_code=400, detail="Penceramah sumber dan sasaran tidak boleh sama.")
+
+    source = session.get(Speaker, payload.source_speaker_id)
+    target = session.get(Speaker, payload.target_speaker_id)
+    if not source or not target:
+        raise HTTPException(status_code=404, detail="Penceramah sumber atau sasaran tidak ditemui")
+
+    # Bulk UPDATEs, not per-row ORM changes: deleting `source` afterwards would otherwise null the
+    # speaker_id of every row still listed in its relationships (same trap as merge_collections).
+    moved_count = session.exec(
+        update(Video).where(Video.speaker_id == source.id).values(speaker_id=target.id)
+    ).rowcount
+    session.exec(
+        update(Collection).where(Collection.speaker_id == source.id).values(speaker_id=target.id)
+    )
+
+    # Favourites move to the target, except for users who already favourited it (unique per user+speaker).
+    already_on_target = select(UserFavoriteSpeaker.user_id).where(UserFavoriteSpeaker.speaker_id == target.id)
+    session.exec(
+        update(UserFavoriteSpeaker)
+        .where(UserFavoriteSpeaker.speaker_id == source.id, UserFavoriteSpeaker.user_id.not_in(already_on_target))
+        .values(speaker_id=target.id)
+    )
+    session.exec(delete(UserFavoriteSpeaker).where(UserFavoriteSpeaker.speaker_id == source.id))
+
+    session.delete(source)
+    session.commit()
+    session.refresh(target)
+
+    return {
+        "status": "success",
+        "message": f"{moved_count} ceramah dipindahkan ke '{target.name}'.",
+        "moved_count": moved_count,
+        "target": target,
+    }
 
 
 @router.post("/collections")
