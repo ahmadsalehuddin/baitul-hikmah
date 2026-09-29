@@ -8,19 +8,19 @@ export function CollectionCard({ collection }) {
   return (
     <Link
       to={`/koleksi/${collection.id}`}
-      className="group -mt-2 flex flex-col gap-3 rounded-lg outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+      className="group -mt-2 flex flex-col gap-3 rounded-lg outline-none transition-transform duration-200 ease-out motion-safe:hover:-translate-y-1 focus-visible:ring-3 focus-visible:ring-ring/50"
     >
       <div className="relative pt-2">
         <div aria-hidden className="absolute inset-x-3 top-0 bottom-0 rounded-lg bg-border" />
         <div aria-hidden className="absolute inset-x-1.5 top-1 bottom-0 rounded-lg bg-muted-foreground/30" />
-        <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
+        <div className="relative aspect-video overflow-hidden rounded-lg bg-muted transition-shadow duration-200 group-hover:shadow-md">
           {collection.thumbnail_path ? (
             <img
               src={collection.thumbnail_path}
               alt=""
               loading="lazy"
               decoding="async"
-              className="size-full object-cover transition-opacity group-hover:opacity-90"
+              className="size-full object-cover transition-transform duration-300 ease-out motion-safe:group-hover:scale-105"
             />
           ) : (
             <div className="flex size-full items-center justify-center text-muted-foreground">

@@ -24,16 +24,16 @@ export function VideoCard({ video, className }) {
     <Link
       to={tontonTo(location, video.id)}
       state={TONTON_LINK_STATE}
-      className={`group flex flex-col gap-3 rounded-lg outline-none focus-visible:ring-3 focus-visible:ring-ring/50 ${className ?? ""}`}
+      className={`group flex flex-col gap-3 rounded-lg outline-none transition-transform duration-200 ease-out motion-safe:hover:-translate-y-1 focus-visible:ring-3 focus-visible:ring-ring/50 ${className ?? ""}`}
     >
-      <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
+      <div className="relative aspect-video overflow-hidden rounded-lg bg-muted transition-shadow duration-200 group-hover:shadow-md">
         {video.thumbnail_path ? (
           <img
             src={video.thumbnail_path}
             alt=""
             loading="lazy"
             decoding="async"
-            className="size-full object-cover transition-opacity group-hover:opacity-90"
+            className="size-full object-cover transition-transform duration-300 ease-out motion-safe:group-hover:scale-105"
           />
         ) : (
           <div className="flex size-full items-center justify-center text-muted-foreground">

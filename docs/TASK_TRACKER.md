@@ -177,3 +177,9 @@ This living document tracks the status of all activities across the project, cle
 - [x] **Claude:** Clean `npm run build`; audit for §8.1 compliance (no hand-rolled components, no arbitrary values). *(Findings and items needing a decision: `architecture-specs.md` §8.4, "7.3b items 5–7".)*
 - [ ] **User:** Review on desktop, Dad's tablet and phone; compare against Figma mockups.
 - [ ] **Gemini (optional):** Post-implementation review.
+
+**7.5 Frontend polish & performance**
+- [x] **Claude:** Unblock the backend event loop: `POST /videos/batch-fetch` now runs `fetch_video_metadata` (yt-dlp) via `run_in_threadpool`. UX unchanged: pasting URLs does nothing until "Muat Naik" is clicked.
+- [x] **Claude:** Micro-animations using only built-in Tailwind utilities and `tw-animate-css` (no arbitrary values, no token changes; wrapped in `motion-safe:` so "reduce motion" disables them): hover lift + thumbnail/avatar zoom + soft shadow on `VideoCard`, `SpeakerCard`, `CollectionCard`; fade/slide-in on `TabsContent` (`ui/tabs.jsx`). Dialogs already fade/zoom via shadcn, so unchanged.
+- [x] **Claude:** `npm run build` passes.
+- [ ] **User:** Test: paste a URL on Tambah Ceramah and confirm the rest of the site stays responsive while metadata is fetched; check card hover and Urus Pustaka tab transitions. Backend change needs `docker compose build backend && docker compose up -d --no-deps backend` to reach production.

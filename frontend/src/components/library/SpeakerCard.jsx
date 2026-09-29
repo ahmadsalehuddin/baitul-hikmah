@@ -13,10 +13,10 @@ export function SpeakerCard({ speaker }) {
   return (
     <Link
       to={`/penceramah/${speaker.id}`}
-      className="group flex flex-col gap-3 rounded-lg outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+      className="group flex flex-col gap-3 rounded-lg outline-none transition-transform duration-200 ease-out motion-safe:hover:-translate-y-1 focus-visible:ring-3 focus-visible:ring-ring/50"
     >
-      <div className="flex aspect-video items-center justify-center rounded-lg bg-border transition-opacity group-hover:opacity-90">
-        <Avatar className="size-16">
+      <div className="flex aspect-video items-center justify-center rounded-lg bg-border transition-shadow duration-200 group-hover:shadow-md">
+        <Avatar className="size-16 transition-transform duration-300 ease-out motion-safe:group-hover:scale-110">
           {speaker.avatar_url && <AvatarImage src={speaker.avatar_url} alt="" />}
           <AvatarFallback>
             <User className="size-8" />

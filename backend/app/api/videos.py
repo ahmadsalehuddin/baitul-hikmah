@@ -65,8 +65,8 @@ async def batch_fetch_videos(
             queued_videos.append(existing)
             continue
 
-        # Extract initial metadata
-        meta = fetch_video_metadata(url) or {}
+        # Extract initial metadata (yt-dlp is blocking network I/O; keep it off the event loop)
+        meta = await run_in_threadpool(fetch_video_metadata, url) or {}
         title = meta.get("title", f"Ceramah YouTube ({yt_id})")
         duration = meta.get("duration", 0)
         uploader = meta.get("uploader", "Ustaz")
