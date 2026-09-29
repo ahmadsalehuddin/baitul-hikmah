@@ -16,6 +16,7 @@ This living document tracks the status of all activities across the project, cle
 | **Phase 5** | Total Frontend Rework & Admin Suite (Urus & Tambah) | Claude Code | **COMPLETED** |
 | **Phase 6** | Containerization, Cloudflare Tunnel & HP Z240 Deployment | Claude / Gemini / User | **COMPLETED** |
 | **Phase 7** | Frontend Redesign — Obra shadcn/ui ([spec §8](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md)) | Claude & User | **IN PROGRESS** (7.1–7.5 implemented & deployed; user device review pending) |
+| **Phase 8** | Lokasi (place of the lecture) field ([spec §8.5](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md)) | Claude & User | **PLANNED** (not started) |
 
 ---
 
@@ -186,3 +187,16 @@ This living document tracks the status of all activities across the project, cle
 - [x] **Claude:** `npm run build` passes.
 - [x] **Claude:** Deployed to production 2026-09-29 (`docker compose build backend frontend && docker compose up -d --no-deps backend frontend`; commits `7b53b85`, `0914551`). Implementation notes: [`architecture-specs.md` §8.4 Phase 7.5](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md).
 - [ ] **User:** Test on the live site (hard-refresh): paste 3–5 links incl. a duplicate on Tambah Ceramah (one card per unique video, site stays responsive during the fetch); check card hover and Urus Pustaka tab transitions.
+
+### Phase 8: Lokasi (place of the lecture)
+*Planned 2026-09-29. Spec: [`architecture-specs.md` §8.5](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md). Nothing is implemented; wait for the System Owner's go-ahead before coding.*
+
+- [ ] **User:** Go-ahead to start, and answer open items L1–L3 (§8.5). Name is decided: **Lokasi**.
+- [ ] **Claude:** Backend: `Location` table + `Video.location_id`; `GET /locations`; `PUT /videos/{id}` accepts `location_id` / `location_name`; nested `location` in video payloads.
+- [ ] **Claude:** Sunting Butiran: **Lokasi** picker (`EntityCombobox`).
+- [ ] **Claude:** Player: Lokasi Badge from `video.location` with the **`MapPin`** icon (replaces the awkward `CirclePlay` channel Badge).
+- [ ] **Claude:** One-off backfill of the 66 videos that have a place in their title (DB backup first); the other 156 stay empty.
+- [ ] **Claude:** Best-effort auto-fill in `batch-fetch` (known-name match, then place-keyword segment); never blocks a download.
+- [ ] **Claude:** Update spec §8.4-style implementation notes, deploy (`docker compose build backend frontend && docker compose up -d --no-deps backend frontend`), tick these boxes.
+- [ ] **User:** Review on the live site.
+

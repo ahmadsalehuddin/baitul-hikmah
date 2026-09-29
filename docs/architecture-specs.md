@@ -613,3 +613,29 @@ The "Fungsi Baharu Sedang Dibangunkan" mockup is obsolete. Redesign keeps all li
 - **Conventions used (System Owner may promote to §8.1):** only built-in Tailwind utilities and `tw-animate-css`, no arbitrary values; every animation is `motion-safe:` (or inherently subtle) so *reduce motion* disables it; motion classes go on our own card `<Link>`s, not on shadcn components.
 - **Decision (System Owner, 2026-09-29):** animation classes are applied as `className` at the usage site, never inside generated `components/ui/*` files (§8.1.2). Reading of §8.1.3: motion/animation utilities are not colour/font/radius/shadow overrides, so they are allowed as `className` on shadcn components; keep them `motion-safe:` and token/built-in-utility only.
 - Also carried over from 7.3b item 6: the `group-hover:shadow-md` on the card thumbnail wrapper is a shadow on a non-shadcn element (same category as audit item 1).
+
+### 8.5 Lokasi (place of the lecture) — PLANNED, not implemented
+*Requirement raised by the System Owner 2026-09-29; approach agreed the same day. Not started: needs a go-ahead to code. Bound by §8.1.*
+
+**Problem.** A ceramah has a place (e.g. *Masjid Al Ghaffar Jasin*, *Madrasah Al Ikhlas*) besides Penceramah and Koleksi Kitab, but it is not a real field. Facts checked in the live DB (2026-09-29): all 222 titles use the pipe format, but only 66 have a place segment (`Kitab | Penceramah | Lokasi | Siri N`; Masjid Al Ghaffar Jasin 42, Madrasah Al Ikhlas 21, Masjid As Sobirin 3) and 156 have none (`Kitab | Penceramah | Siri N`). For the 66, the text sits in `Video.channel_name` because the legacy migration (§5.2) put it there; the player's channel Badge therefore *happens* to show it. **New downloads never set it**: `fetch_video_metadata` reads only id, title, duration, uploader, thumbnail, description, and `yt-dlp` does not supply a usable place (its `location` field only exists if the uploader set YouTube's optional recording location; not verified on our videos, all sampled ones are now private). Future titles may not follow the pipe format at all, so **titles are a hint, never the source of truth.**
+
+**Decisions**
+- **Name: "Lokasi"** (System Owner; not "Tempat"). A first-class, admin-editable field, modelled as an entity like Penceramah/Koleksi Kitab because places repeat (42 videos share one masjid), which avoids typos and enables a clean filter later.
+- `channel_name` keeps meaning "YouTube channel" and is left untouched.
+- **Badge icon:** the current channel Badge in `PlayerDialog.jsx` uses lucide `CirclePlay`, which reads as "play/channel" and does not convey a place (System Owner: awkward). The Lokasi Badge uses **`MapPin`** (lucide) instead.
+
+**Scope — first step**
+1. **Data:** new `Location` table (`id`, `name` unique, `created_at`) and nullable `Video.location_id` (FK). Additive columns/tables via `ADDITIVE_COLUMNS` / `create_all` (see §8.4 Phase 7.2 schema notes).
+2. **API:** `GET /locations`; `PUT /videos/{id}` accepts `location_id` or `location_name` (find-or-create by name, mirroring `speaker_name` / `collection_title`); list/detail video payloads include nested `location: {id, name}` like `speaker`.
+3. **Sunting Butiran (§8.3.7):** one more Field **Lokasi** under Penceramah, using the existing `EntityCombobox` (pick existing, or "＋ Tambah '…'" to create on Simpan). Unset shows "Belum ditentukan" elsewhere.
+4. **Player (§8.3.5):** Badge with `MapPin` showing `video.location.name`, replacing the `channel_name` Badge (no Link for now).
+5. **Backfill (one-off, idempotent, like 7.2):** create `Location` rows for the 3 known places and link the 66 videos (from the 3rd pipe segment when the title has ≥4 segments). Back up the DB first. The other 156 stay empty until set by hand.
+6. **Auto-fill on `batch-fetch` (suggestion only; must never block or fail a download):** (a) if any pipe segment equals an existing Lokasi name (case-insensitive), link it; (b) else if a segment starts with a place keyword (Masjid, Madrasah, Surau, Dewan) and the title has ≥4 segments, create that Lokasi and link it; (c) otherwise leave blank. The admin corrects anything in Sunting Butiran.
+
+**Out of scope for the first step (add only if wanted):** a Lokasi line on library cards, a "Lokasi" filter in Tapis, a Lokasi tab in Urus Pustaka (rename/merge/delete like Penceramah), a `/lokasi/:id` page.
+
+**Open items**
+- L1 — Suggest a usual Lokasi from the video's Koleksi Kitab or Penceramah when the title has no place? Not included above because a new download has no Koleksi yet and one Penceramah teaches at many places; could instead be offered as a default inside Sunting Butiran once a Koleksi is chosen.
+- L2 — Confirm the exact place-keyword list and the Malay wording of the picker placeholder/empty state.
+- L3 — Whether the cards/Tapis/Urus items above are wanted later.
+

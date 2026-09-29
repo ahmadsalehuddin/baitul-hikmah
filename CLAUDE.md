@@ -99,4 +99,5 @@ Restarting the backend interrupts running downloads — check for pending/downlo
    - "Koleksi Kitab" (Book/Series Collection)
    - "Penceramah" (Speaker/Lecturer)
    - "Urus Pustaka" (Manage Library)
+   - "Lokasi" (Place of the lecture — planned, spec §8.5; not "Tempat")
 4. **Design System (Strict):** All frontend UI must use official shadcn/ui components (Obra shadcn/ui kit) styled only through the theme tokens. Never hand-roll components, use arbitrary values, or change the theme without the System Owner's explicit permission. Full rules: [`docs/architecture-specs.md` §8.1](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md).
