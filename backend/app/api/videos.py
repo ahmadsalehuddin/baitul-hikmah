@@ -2,7 +2,7 @@ import asyncio
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request, UploadFile, File, status
 from fastapi.concurrency import run_in_threadpool
-from sqlmodel import Session, select, or_, desc, asc
+from sqlmodel import Session, select, update, or_, desc, asc
 from app.core.database import get_session
 from app.core.auth import get_optional_user, require_admin
 from app.models.schema import (
@@ -648,12 +648,11 @@ async def merge_collections(
     if not source or not target:
         raise HTTPException(status_code=404, detail="Koleksi sumber atau sasaran tidak ditemui")
 
-    videos_to_move = session.exec(
-        select(Video).where(Video.collection_id == source.id)
-    ).all()
-    for v in videos_to_move:
-        v.collection_id = target.id
-        session.add(v)
+    # A bulk UPDATE, not per-video ORM changes: deleting `source` afterwards would otherwise
+    # null the collection_id of every video still listed in `source.videos`.
+    moved_count = session.exec(
+        update(Video).where(Video.collection_id == source.id).values(collection_id=target.id)
+    ).rowcount
 
     session.delete(source)
     session.commit()
@@ -661,8 +660,8 @@ async def merge_collections(
 
     return {
         "status": "success",
-        "message": f"{len(videos_to_move)} ceramah dipindahkan ke '{target.title}'.",
-        "moved_count": len(videos_to_move),
+        "message": f"{moved_count} ceramah dipindahkan ke '{target.title}'.",
+        "moved_count": moved_count,
         "target": target,
     }
 
