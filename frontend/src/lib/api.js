@@ -26,9 +26,10 @@ export function onDevUserChange(callback) {
 }
 
 async function apiFetch(path, options = {}) {
+  // The dev-login header exists for local development only; production auth is Cloudflare Access.
   const headers = {
     ...(options.headers || {}),
-    "X-Dev-User-Email": getActiveDevUser(),
+    ...(import.meta.env.DEV ? { "X-Dev-User-Email": getActiveDevUser() } : {}),
   };
   return fetch(`${API_BASE}${path}`, { ...options, headers });
 }

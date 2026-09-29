@@ -229,8 +229,14 @@ erDiagram
   - If `viewer@example.com` -> Authenticated as **Ayah (Viewer)**.
   - If `admin@example.com` -> Authenticated as **Ahmad (Admin)**.
 
+**Implementation (2026-09-29, `backend/app/core/auth.py`):**
+- `ENVIRONMENT=production` (set in `docker-compose.yml`): identity comes only from Cloudflare Access; `X-Dev-User-Email` is ignored and there is no admin fallback, so a request without an identity gets **401** (including `GET /videos`). `/api/health` stays open for the container health check; `/storage/*` thumbnails are static and not authenticated at the origin (Cloudflare Access still protects them at the edge).
+- If `CF_ACCESS_TEAM_DOMAIN` (`<team>.cloudflareaccess.com`) and `CF_ACCESS_AUD` (the Access application's AUD tag) are set, every request must carry a valid `Cf-Access-Jwt-Assertion` (RS256, keys from `https://<team>.cloudflareaccess.com/cdn-cgi/access/certs`, issuer + audience + expiry checked). The user is the verified token's `email`; a differing `Cf-Access-Authenticated-User-Email` is rejected. Without those two variables the check is skipped and the email header is trusted as before (a warning is logged at start-up) — in that mode anyone who can reach `127.0.0.1:3000`/`:8000` on the server can forge the header, which is what the JWT check closes.
+- `CF_ACCESS_EXTRA_ISSUERS` (comma-separated, defaulted in `docker-compose.yml` to the old team URL) lists additional accepted `iss` values: after a Zero Trust team rename, Cloudflare kept issuing tokens with the old team's issuer. Keys still come from `CF_ACCESS_TEAM_DOMAIN`, and signature + AUD are still enforced. In header-only mode the backend logs a token's public `iss`/`aud` once, to help fill these settings in.
+- nginx strips any client `X-Dev-User-Email`, and the production frontend build no longer sends it.
+
 ### 6.2 Local Development Flow
-- FastAPI middleware supports `X-Dev-User-Email` header fallback.
+- FastAPI supports the `X-Dev-User-Email` header fallback (and defaults to the admin account when no header is sent) **only when `ENVIRONMENT` is not `production`** (the default when running `python main.py`).
 - In dev mode, a discrete user avatar switcher in the frontend navigation bar lets you toggle between Ahmad and Ayah to immediately test both views.
 
 ---

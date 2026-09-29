@@ -5,3 +5,4 @@ yt-dlp>=2024.11.04
 aiofiles>=24.1.0
 pydantic>=2.9.2
 python-multipart>=0.0.12
+PyJWT[crypto]>=2.9.0
