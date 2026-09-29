@@ -94,7 +94,7 @@ function UrusPustaka() {
 
       <Tabs value={tab} onValueChange={selectTab} className="gap-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <TabsList className="max-w-full overflow-x-auto">
+          <TabsList className="max-w-full overflow-x-auto overflow-y-hidden">
             <TabsTrigger value="ceramah">Ceramah</TabsTrigger>
             <TabsTrigger value="koleksi">Koleksi Kitab</TabsTrigger>
             <TabsTrigger value="penceramah">Penceramah</TabsTrigger>
