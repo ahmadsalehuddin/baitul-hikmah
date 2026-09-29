@@ -225,3 +225,32 @@ export async function mergeCollections(sourceCollectionId, targetCollectionId) {
   if (!res.ok) throw data;
   return data;
 }
+
+/** Admin: replace the thumbnail with an uploaded image (JPEG/PNG/WebP, ≤ 5 MB). Spec §8.4 (7.2). */
+export async function uploadVideoThumbnail(videoId, file) {
+  const form = new FormData();
+  form.append("file", file);
+  const res = await apiFetch(`/videos/${videoId}/thumbnail`, { method: "POST", body: form });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw data;
+  return data;
+}
+
+/** Admin: restore the original YouTube thumbnail. */
+export async function resetVideoThumbnail(videoId) {
+  const res = await apiFetch(`/videos/${videoId}/thumbnail`, { method: "DELETE" });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw data;
+  return data;
+}
+
+/** Saves the caller's own preferences (`text_size`); returns the same payload as `GET /auth/me`. */
+export async function updateUserPreferences(preferences) {
+  const res = await apiFetch(`/auth/me/preferences`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(preferences),
+  });
+  if (!res.ok) throw new Error("Gagal menyimpan tetapan");
+  return res.json();
+}

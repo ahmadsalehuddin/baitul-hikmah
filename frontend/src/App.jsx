@@ -1,5 +1,5 @@
 import React from "react";
-import { Navigate, Route, Routes, useNavigate } from "react-router";
+import { Navigate, Route, Routes } from "react-router";
 import { Navbar } from "./components/Navbar";
 import { PlayerHost } from "./components/player/PlayerHost";
 import { LibraryProvider } from "./hooks/use-library";
@@ -9,9 +9,6 @@ import { TambahCeramahPage } from "./pages/TambahCeramahPage";
 import { UrusPustakaPage } from "./pages/UrusPustakaPage";
 
 export default function App() {
-  const navigate = useNavigate();
-  const goHome = () => navigate("/");
-
   return (
     <LibraryProvider>
       <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
@@ -25,8 +22,8 @@ export default function App() {
               <Route path="/koleksi/:id" element={<LibraryView mode="collection" />} />
               <Route path="/cari" element={<LibraryView mode="search" />} />
             </Route>
-            <Route path="/tambah" element={<TambahCeramahPage onGoHome={goHome} />} />
-            <Route path="/urus" element={<UrusPustakaPage onGoHome={goHome} />} />
+            <Route path="/tambah" element={<TambahCeramahPage />} />
+            <Route path="/urus" element={<UrusPustakaPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>

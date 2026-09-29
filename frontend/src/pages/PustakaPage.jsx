@@ -1,5 +1,6 @@
 import React from "react";
 import { Outlet } from "react-router";
+import { PageLayout } from "@/components/PageLayout";
 import { SearchBar } from "@/components/library/SearchBar";
 
 /**
@@ -9,15 +10,12 @@ import { SearchBar } from "@/components/library/SearchBar";
  */
 export function PustakaPage() {
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 pt-8 pb-16 sm:px-6">
-      <div className="mx-auto flex w-full max-w-xl flex-col gap-6">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-4xl">Pustaka Ceramah</h1>
-          <p>Cari dan tonton kesemua koleksi ceramah secara terus dari dalam pustaka.</p>
-        </div>
-        <SearchBar />
-      </div>
+    <PageLayout
+      title="Pustaka Ceramah"
+      description="Cari dan tonton kesemua koleksi ceramah secara terus dari dalam pustaka."
+      header={<SearchBar />}
+    >
       <Outlet />
-    </div>
+    </PageLayout>
   );
 }

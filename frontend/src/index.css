@@ -90,29 +90,6 @@
   --radius-4xl: calc(var(--radius) + 18px);
 }
 
-/*
-  TEMPORARY (§8.3.1): legacy brand palette and container utility, kept only so the
-  pre-redesign pages keep rendering during 7.1. Must be removed by the end of 7.3.
-*/
-@theme {
-  --color-brand-gold: #96742b;
-  --color-brand-emerald: #022c22;
-  --color-brand-sage: #e6f4ea;
-  --color-brand-forest: #14532d;
-  --color-brand-stone: #fafaf9;
-}
-
-@utility container {
-  margin-inline: auto;
-  padding-inline: 2rem;
-  @media (width >= --theme(--breakpoint-sm)) {
-    max-width: none;
-  }
-  @media (width >= 1400px) {
-    max-width: 1400px;
-  }
-}
-
 @layer base {
   * {
     @apply border-border outline-ring/50;

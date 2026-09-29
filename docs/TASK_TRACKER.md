@@ -160,16 +160,16 @@ This living document tracks the status of all activities across the project, cle
 - [x] **Claude:** Navbar + profile menu + phone Sheet (§8.3.3). *(7.3a)*
 - [x] **Claude:** Pustaka Ceramah: cards, Tapis, Susun, Breadcrumb, search, Empty, progressive loading (§8.3.4). *(7.3a)*
 - [x] **Claude:** Video Player Dialog + Audio mode with shared shadcn controls incl. fullscreen, auto-hide, buffering, keyboard (§8.3.5). *(7.3a)*
-- [ ] **Claude:** Tambah Ceramah (§8.3.6). *(7.3b)*
-- [ ] **Claude:** Sunting Butiran Ceramah dialog (§8.3.7).
-- [ ] **Claude:** Urus Pustaka redesign (§8.3.8).
-- [ ] **Claude:** Saiz Teks accessibility setting (§8.3.9).
-- [ ] **Claude:** Responsive layouts for phone/tablet/desktop (§8.3.10).
+- [x] **Claude:** Tambah Ceramah (§8.3.6). *(7.3b)*
+- [x] **Claude:** Sunting Butiran Ceramah dialog (§8.3.7).
+- [x] **Claude:** Urus Pustaka redesign (§8.3.8).
+- [x] **Claude:** Saiz Teks accessibility setting (§8.3.9).
+- [x] **Claude:** Responsive layouts for phone/tablet/desktop (§8.3.10).
 
 **Next after 7.3: Auth hardening (spec [§6](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md) / §7.2)**
 - [ ] **Claude:** `backend/app/core/auth.py` `_extract_email()` always falls back to the admin account (`DEV_FALLBACK_EMAIL`) when no auth header is sent, and honours `X-Dev-User-Email` in every environment. The §7.2 guard "disable `X-Dev-User-Email` bypass when `ENVIRONMENT=production`" is not implemented. Fix: add an `ENVIRONMENT` setting (set `production` in `docker-compose.yml`); in production accept only `Cf-Access-Authenticated-User-Email` (and verify the `Cf-Access-Jwt-Assertion` signature per §6.1), return 401 otherwise, keep the dev fallback only for local dev. Check that the frontend nginx does not let a client-supplied `X-Dev-User-Email` reach the backend. Verify with header-less, spoofed-header and valid-header requests. *(Found while doing 7.2; not part of it.)*
 
 **7.4 Verification**
-- [ ] **Claude:** Clean `npm run build`; audit for §8.1 compliance (no hand-rolled components, no arbitrary values).
+- [x] **Claude:** Clean `npm run build`; audit for §8.1 compliance (no hand-rolled components, no arbitrary values). *(Findings and items needing a decision: `architecture-specs.md` §8.4, "7.3b items 5–7".)*
 - [ ] **User:** Review on desktop, Dad's tablet and phone; compare against Figma mockups.
 - [ ] **Gemini (optional):** Post-implementation review.

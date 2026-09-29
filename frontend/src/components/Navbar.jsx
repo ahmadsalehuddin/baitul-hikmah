@@ -33,8 +33,10 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
+import { TextSizeControl } from "@/components/TextSizeControl";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { getActiveDevUser, setActiveDevUser } from "@/lib/api";
+import { getInitials } from "@/lib/format";
 
 // Dev user switcher: local development only (spec §8.3.3). Vite strips this from production builds.
 const IS_LOCAL_DEV = import.meta.env.DEV;
@@ -53,13 +55,6 @@ const URUS_ITEMS = [
   { tab: "penceramah", label: "Penceramah", icon: User },
 ];
 
-function getInitials(name) {
-  if (!name) return "?";
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
-
 function BrandLink() {
   return (
     <Link to="/" className="flex items-center gap-3 rounded-md">
@@ -76,7 +71,7 @@ function isLibraryPath(pathname) {
 
 function DesktopNav({ isAdmin, pathname }) {
   return (
-    <NavigationMenu viewport={false} className="hidden sm:flex">
+    <NavigationMenu viewport={false} className="hidden @2xl:flex">
       <NavigationMenuList>
         <NavigationMenuItem>
           <NavigationMenuLink asChild active={isLibraryPath(pathname)} className={navigationMenuTriggerStyle()}>
@@ -120,7 +115,7 @@ function PhoneNav({ isAdmin }) {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="sm:hidden" aria-label="Buka menu navigasi">
+        <Button variant="ghost" size="icon" className="@2xl:hidden" aria-label="Buka menu navigasi">
           <Menu />
         </Button>
       </SheetTrigger>
@@ -183,7 +178,8 @@ function ProfileMenu({ user }) {
           Assalamualaikum, <strong>{user?.display_name ?? "…"}</strong>
         </div>
 
-        {/* SLOT: Saiz Teks (spec §8.3.9) — built in Phase 7.3b. Place the − / + Button Group here. */}
+        <DropdownMenuSeparator />
+        <TextSizeControl />
 
         {IS_LOCAL_DEV && (
           <>
@@ -221,7 +217,7 @@ export function Navbar() {
   const { user, isAdmin } = useCurrentUser();
 
   return (
-    <header className="w-full">
+    <header className="@container w-full">
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-2 px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-1">
           <PhoneNav isAdmin={isAdmin} />

@@ -2,27 +2,12 @@ import React, { useMemo, useState } from "react";
 import { Link, Navigate, useParams, useSearchParams } from "react-router";
 import { Heart, LibraryBig, RefreshCw, SearchX } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { EmptyState } from "@/components/EmptyState";
 import { ContinueWatchingRow } from "@/components/library/ContinueWatchingRow";
 import { LibraryGrid, LoadingIndicator } from "@/components/library/LibraryGrid";
 import { FilterSortControls, LibraryBreadcrumb } from "@/components/library/LibraryToolbar";
 import { useLibrary } from "@/hooks/use-library";
 import { availableKinds, filterItems, itemsForView, sortItems } from "@/lib/library";
-
-function EmptyState({ icon: Icon, title, description, action }) {
-  return (
-    <Empty>
-      <EmptyHeader>
-        <EmptyMedia variant="icon">
-          <Icon />
-        </EmptyMedia>
-        <EmptyTitle>{title}</EmptyTitle>
-        <EmptyDescription>{description}</EmptyDescription>
-      </EmptyHeader>
-      {action && <EmptyContent>{action}</EmptyContent>}
-    </Empty>
-  );
-}
 
 const HOME_BUTTON = (
   <Button asChild variant="ghost">
