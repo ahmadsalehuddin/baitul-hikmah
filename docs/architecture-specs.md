@@ -635,7 +635,7 @@ The "Fungsi Baharu Sedang Dibangunkan" mockup is obsolete. Redesign keeps all li
 **Out of scope for the first step (add only if wanted):** a Lokasi line on library cards, a "Lokasi" filter in Tapis, a Lokasi tab in Urus Pustaka (rename/merge/delete like Penceramah), a `/lokasi/:id` page.
 
 **Open items**
-- L1 — Suggest a usual Lokasi from the video's Koleksi Kitab or Penceramah when the title has no place? Not included above because a new download has no Koleksi yet and one Penceramah teaches at many places; could instead be offered as a default inside Sunting Butiran once a Koleksi is chosen.
-- L2 — Confirm the exact place-keyword list and the Malay wording of the picker placeholder/empty state.
+- ~~L1 — Suggest a usual Lokasi from Koleksi Kitab/Penceramah~~ **Resolved 2026-09-29: No.** Only title-based auto-fill (rules a–c above) is used.
+- ~~L2 — Place-keyword list and Malay wording~~ **Resolved 2026-09-29: Yes**, keyword list as in rule (b): Masjid, Madrasah, Surau, Dewan; picker wording follows the Penceramah/Koleksi pickers.
 - L3 — Whether the cards/Tapis/Urus items above are wanted later.
 

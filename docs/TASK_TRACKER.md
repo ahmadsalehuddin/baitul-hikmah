@@ -191,7 +191,7 @@ This living document tracks the status of all activities across the project, cle
 ### Phase 8: Lokasi (place of the lecture)
 *Planned 2026-09-29. Spec: [`architecture-specs.md` §8.5](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md). Nothing is implemented; wait for the System Owner's go-ahead before coding.*
 
-- [ ] **User:** Go-ahead to start, and answer open items L1–L3 (§8.5). Name is decided: **Lokasi**.
+- [ ] **User:** Go-ahead to start, and answer open item L3 (§8.5). Name is decided: **Lokasi**. L1 (No) and L2 (Yes) resolved 2026-09-29.
 - [ ] **Claude:** Backend: `Location` table + `Video.location_id`; `GET /locations`; `PUT /videos/{id}` accepts `location_id` / `location_name`; nested `location` in video payloads.
 - [ ] **Claude:** Sunting Butiran: **Lokasi** picker (`EntityCombobox`).
 - [ ] **Claude:** Player: Lokasi Badge from `video.location` with the **`MapPin`** icon (replaces the awkward `CirclePlay` channel Badge).
