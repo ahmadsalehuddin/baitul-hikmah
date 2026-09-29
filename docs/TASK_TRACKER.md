@@ -16,7 +16,7 @@ This living document tracks the status of all activities across the project, cle
 | **Phase 5** | Total Frontend Rework & Admin Suite (Urus & Tambah) | Claude Code | **COMPLETED** |
 | **Phase 6** | Containerization, Cloudflare Tunnel & HP Z240 Deployment | Claude / Gemini / User | **COMPLETED** |
 | **Phase 7** | Frontend Redesign — Obra shadcn/ui ([spec §8](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md)) | Claude & User | **IN PROGRESS** (7.1–7.5 implemented & deployed; user device review pending) |
-| **Phase 8** | Lokasi (place of the lecture) field ([spec §8.5](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md)) | Claude & User | **PLANNED** (not started) |
+| **Phase 8** | Lokasi (place of the lecture) field ([spec §8.5](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md)) | Claude & User | **READY TO IMPLEMENT** (requirements final) |
 
 ---
 
@@ -191,9 +191,10 @@ This living document tracks the status of all activities across the project, cle
 ### Phase 8: Lokasi (place of the lecture)
 *Planned 2026-09-29. Spec: [`architecture-specs.md` §8.5](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md). Nothing is implemented; wait for the System Owner's go-ahead before coding.*
 
-- [ ] **User:** Go-ahead to start, and answer open item L3 (§8.5). Name is decided: **Lokasi**. L1 (No) and L2 (Yes) resolved 2026-09-29.
-- [ ] **Claude:** Backend: `Location` table + `Video.location_id`; `GET /locations`; `PUT /videos/{id}` accepts `location_id` / `location_name`; nested `location` in video payloads.
+- [x] **User:** Go-ahead to start, and open items L1–L3 all resolved 2026-09-29. Go-ahead given; **implement in a new session**. Name: **Lokasi**.
+- [ ] **Claude:** Backend: `Location` table + `Video.location_id`; `GET/POST/PUT/DELETE /locations` + `POST /locations/merge`; `PUT /videos/{id}` accepts `location_id` / `location_name`; nested `location` in video payloads.
 - [ ] **Claude:** Sunting Butiran: **Lokasi** picker (`EntityCombobox`).
+- [ ] **Claude:** Urus Pustaka: new **Lokasi** tab (Sunting / Gabung / Padam), like Koleksi Kitab (§8.5 item 7).
 - [ ] **Claude:** Player: Lokasi Badge from `video.location` with the **`MapPin`** icon (replaces the awkward `CirclePlay` channel Badge).
 - [ ] **Claude:** One-off backfill of the 66 videos that have a place in their title (DB backup first); the other 156 stay empty.
 - [ ] **Claude:** Best-effort auto-fill in `batch-fetch` (known-name match, then place-keyword segment); never blocks a download.

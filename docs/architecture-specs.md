@@ -626,16 +626,19 @@ The "Fungsi Baharu Sedang Dibangunkan" mockup is obsolete. Redesign keeps all li
 
 **Scope — first step**
 1. **Data:** new `Location` table (`id`, `name` unique, `created_at`) and nullable `Video.location_id` (FK). Additive columns/tables via `ADDITIVE_COLUMNS` / `create_all` (see §8.4 Phase 7.2 schema notes).
-2. **API:** `GET /locations`; `PUT /videos/{id}` accepts `location_id` or `location_name` (find-or-create by name, mirroring `speaker_name` / `collection_title`); list/detail video payloads include nested `location: {id, name}` like `speaker`.
+2. **API:** `GET /locations` (with video counts); `POST /locations`, `PUT /locations/{id}` (rename), `DELETE /locations/{id}` (refused with an error `detail` while videos use it, like collections), `POST /locations/merge` (mirror the Koleksi Kitab endpoints; admin only); `PUT /videos/{id}` accepts `location_id` or `location_name` (find-or-create by name, mirroring `speaker_name` / `collection_title`); list/detail video payloads include nested `location: {id, name}` like `speaker`.
 3. **Sunting Butiran (§8.3.7):** one more Field **Lokasi** under Penceramah, using the existing `EntityCombobox` (pick existing, or "＋ Tambah '…'" to create on Simpan). Unset shows "Belum ditentukan" elsewhere.
 4. **Player (§8.3.5):** Badge with `MapPin` showing `video.location.name`, replacing the `channel_name` Badge (no Link for now).
 5. **Backfill (one-off, idempotent, like 7.2):** create `Location` rows for the 3 known places and link the 66 videos (from the 3rd pipe segment when the title has ≥4 segments). Back up the DB first. The other 156 stay empty until set by hand.
+7. **Urus Pustaka (§8.3.8):** a fourth tab **Lokasi** (`?tab=lokasi`), same pattern as the Koleksi Kitab tab (Table ≥640px / Card list <640px, `RowActions`): **Sunting** (rename dialog), **Gabung** (merge dialog), **Padam** (disabled with "(lokasi digunakan)" while videos use it; API `detail` errors shown in the confirm dialog). The existing **Tambah Penceramah atau Koleksi** button is left unchanged — Lokasi entries are created from Sunting Butiran ("＋ Tambah '…'") or by auto-fill.
 6. **Auto-fill on `batch-fetch` (suggestion only; must never block or fail a download):** (a) if any pipe segment equals an existing Lokasi name (case-insensitive), link it; (b) else if a segment starts with a place keyword (Masjid, Madrasah, Surau, Dewan) and the title has ≥4 segments, create that Lokasi and link it; (c) otherwise leave blank. The admin corrects anything in Sunting Butiran.
 
-**Out of scope for the first step (add only if wanted):** a Lokasi line on library cards, a "Lokasi" filter in Tapis, a Lokasi tab in Urus Pustaka (rename/merge/delete like Penceramah), a `/lokasi/:id` page.
+**Out of scope (System Owner 2026-09-29: "no need yet"):** a Lokasi line on library cards, a "Lokasi" filter in Tapis, a `/lokasi/:id` page. Add only if the System Owner asks later.
 
 **Open items**
 - ~~L1 — Suggest a usual Lokasi from Koleksi Kitab/Penceramah~~ **Resolved 2026-09-29: No.** Only title-based auto-fill (rules a–c above) is used.
 - ~~L2 — Place-keyword list and Malay wording~~ **Resolved 2026-09-29: Yes**, keyword list as in rule (b): Masjid, Madrasah, Surau, Dewan; picker wording follows the Penceramah/Koleksi pickers.
-- L3 — Whether the cards/Tapis/Urus items above are wanted later.
+- ~~L3 — Extras~~ **Resolved 2026-09-29:** cards line **No**, Tapis filter **No**, Urus Pustaka **Lokasi tab Yes** (now in scope, item 7).
+
+**All open items resolved. Implementation to be done in a new chat/session (System Owner's instruction); requirements finalized.**
 
