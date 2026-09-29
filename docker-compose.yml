@@ -1,0 +1,34 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: baitul_hikmah_backend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - /mnt/storage/media/baitul-hikmah:/mnt/storage/media/baitul-hikmah
+    environment:
+      - STORAGE_DIR=/mnt/storage/media/baitul-hikmah
+      - VIDEOS_DIR=/mnt/storage/media/baitul-hikmah/videos
+      - THUMBNAILS_DIR=/mnt/storage/media/baitul-hikmah/thumbnails
+      - AUDIO_DIR=/mnt/storage/media/baitul-hikmah/audio
+      - PYTHONUNBUFFERED=1
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: baitul_hikmah_frontend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:80"
+    depends_on:
+      - backend
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: baitul_hikmah_tunnel
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}

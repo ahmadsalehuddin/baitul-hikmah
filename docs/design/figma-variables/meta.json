@@ -1,0 +1,16 @@
+{
+  "key": {
+    "$type": "string",
+    "$value": "EBFDF",
+    "$extensions": {
+      "com.figma.variableId": "VariableID:2143:3",
+      "com.figma.scopes": [
+        "ALL_SCOPES"
+      ],
+      "com.figma.type": "string"
+    }
+  },
+  "$extensions": {
+    "com.figma.modeName": "Mode 1"
+  }
+}
