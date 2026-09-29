@@ -39,13 +39,14 @@ function initialEntity(video, key, entities, labelKey) {
 }
 
 function SuntingForm({ video, onClose, onSaved }) {
-  const { speakers, collections, speakersById, collectionsById } = useEntities();
+  const { speakers, collections, locations, speakersById, collectionsById, locationsById } = useEntities();
   const fileRef = useRef(null);
 
   const [title, setTitle] = useState(video.title ?? "");
   const [series, setSeries] = useState(video.series_number ? String(video.series_number) : "");
   const [collection, setCollection] = useState(() => initialEntity(video, "collection", collectionsById, "title"));
   const [speaker, setSpeaker] = useState(() => initialEntity(video, "speaker", speakersById, "name"));
+  const [location, setLocation] = useState(() => initialEntity(video, "location", locationsById, "name"));
   const [thumb, setThumb] = useState({ path: video.thumbnail_path, isCustom: !!video.is_custom_thumbnail });
   const [thumbBusy, setThumbBusy] = useState(false);
   const [thumbChanged, setThumbChanged] = useState(false);
@@ -55,6 +56,7 @@ function SuntingForm({ video, onClose, onSaved }) {
   // The lists may load after the dialog opens; fill in names that were only known by id.
   const collectionValue = collection ?? initialEntity(video, "collection", collectionsById, "title");
   const speakerValue = speaker ?? initialEntity(video, "speaker", speakersById, "name");
+  const locationValue = location ?? initialEntity(video, "location", locationsById, "name");
 
   const collectionOptions = useMemo(
     () => [...collections].sort((a, b) => a.title.localeCompare(b.title, "ms")).map((c) => ({ id: c.id, label: c.title })),
@@ -63,6 +65,11 @@ function SuntingForm({ video, onClose, onSaved }) {
   const speakerOptions = useMemo(
     () => [...speakers].sort((a, b) => a.name.localeCompare(b.name, "ms")).map((s) => ({ id: s.id, label: s.name })),
     [speakers]
+  );
+
+  const locationOptions = useMemo(
+    () => [...locations].sort((a, b) => a.name.localeCompare(b.name, "ms")).map((l) => ({ id: l.id, label: l.name })),
+    [locations]
   );
 
   const seriesNumber = series.trim() === "" ? null : Number(series);
@@ -115,6 +122,10 @@ function SuntingForm({ video, onClose, onSaved }) {
       if (speakerValue.id !== null) payload.speaker_id = speakerValue.id;
       else payload.speaker_name = speakerValue.label;
     }
+    if (locationValue) {
+      if (locationValue.id !== null) payload.location_id = locationValue.id;
+      else payload.location_name = locationValue.label;
+    }
     if (seriesNumber !== (video.series_number ?? null)) payload.series_number = seriesNumber;
     try {
       await updateVideoDetails(video.id, payload);
@@ -131,7 +142,7 @@ function SuntingForm({ video, onClose, onSaved }) {
     <form onSubmit={handleSubmit} className="contents">
       <DialogHeader>
         <DialogTitle>Sunting Butiran Ceramah</DialogTitle>
-        <DialogDescription className="sr-only">Ubah gambar, tajuk, siri, koleksi kitab dan penceramah ceramah ini.</DialogDescription>
+        <DialogDescription className="sr-only">Ubah gambar, tajuk, siri, koleksi kitab, penceramah dan lokasi ceramah ini.</DialogDescription>
       </DialogHeader>
 
       <FieldGroup>
@@ -219,6 +230,21 @@ function SuntingForm({ video, onClose, onSaved }) {
             emptyLabel="Tiada penceramah dijumpai."
           />
           {speakerValue?.id === null && <FieldDescription>Penceramah baharu akan ditambah apabila anda menyimpan.</FieldDescription>}
+        </Field>
+
+        <Field>
+          <FieldLabel htmlFor="sunting-lokasi">Lokasi</FieldLabel>
+          <EntityCombobox
+            id="sunting-lokasi"
+            options={locationOptions}
+            value={locationValue}
+            onChange={setLocation}
+            placeholder="Belum ditentukan"
+            searchPlaceholder="Cari atau taip nama lokasi"
+            createLabel={(text) => `Tambah ‘${text}’`}
+            emptyLabel="Tiada lokasi dijumpai."
+          />
+          {locationValue?.id === null && <FieldDescription>Lokasi baharu akan ditambah apabila anda menyimpan.</FieldDescription>}
         </Field>
 
         {error && (

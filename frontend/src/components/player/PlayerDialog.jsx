@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
-import { CircleCheck, CirclePlay, Circle, Clock, Headphones, Heart, LibraryBig, User, Video, X } from "lucide-react";
+import { CircleCheck, Circle, Clock, Headphones, Heart, LibraryBig, MapPin, User, Video, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
@@ -23,7 +23,7 @@ function isEditable(target) {
 function PlayerBody({ video, saveRef, onWatchedChange }) {
   const [mode, setMode] = useState("video");
   const [resume, setResume] = useState(null); // { seconds, watched, favourite } once the saved progress is known
-  const [details, setDetails] = useState(null); // raw Video record: channel_name (the list items lack it)
+  const [details, setDetails] = useState(null); // raw Video record (the list items lack some of its fields)
   const [isWatched, setIsWatched] = useState(Boolean(video.user_progress?.is_watched));
   const [isFavourite, setIsFavourite] = useState(Boolean(video.user_progress?.is_favorite));
   const [watchedBusy, setWatchedBusy] = useState(false);
@@ -147,7 +147,6 @@ function PlayerBody({ video, saveRef, onWatchedChange }) {
     return () => document.removeEventListener("keydown", listener);
   }, []);
 
-  const channel = details?.channel_name;
   const description = details?.description || video.description;
 
   return (
@@ -183,10 +182,10 @@ function PlayerBody({ video, saveRef, onWatchedChange }) {
                 </Link>
               </Badge>
             )}
-            {channel && (
+            {video.location && (
               <Badge variant="outline">
-                <CirclePlay />
-                {channel}
+                <MapPin />
+                {video.location.name}
               </Badge>
             )}
             {video.duration_seconds > 0 && (

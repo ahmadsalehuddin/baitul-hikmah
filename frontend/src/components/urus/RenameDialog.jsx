@@ -6,12 +6,18 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
-import { updateCollection, updateSpeaker } from "@/lib/api";
+import { updateCollection, updateLocation, updateSpeaker } from "@/lib/api";
 
-/** Rename a Koleksi Kitab (`kind="collection"`) or Penceramah (`kind="speaker"`). Render while editing. */
+const KINDS = {
+  collection: { title: "Sunting Koleksi Kitab", noun: "koleksi kitab", label: "Nama Koleksi Kitab", read: (e) => e.title, save: (id, name) => updateCollection(id, { title: name }) },
+  speaker: { title: "Sunting Penceramah", noun: "penceramah", label: "Nama Penceramah", read: (e) => e.name, save: (id, name) => updateSpeaker(id, { name }) },
+  location: { title: "Sunting Lokasi", noun: "lokasi", label: "Nama Lokasi", read: (e) => e.name, save: (id, name) => updateLocation(id, { name }) },
+};
+
+/** Rename a Koleksi Kitab (`kind="collection"`), Penceramah (`"speaker"`) or Lokasi (`"location"`). Render while editing. */
 export function RenameDialog({ entity, kind, onClose, onSaved }) {
-  const isCollection = kind === "collection";
-  const [name, setName] = useState(isCollection ? entity.title : entity.name);
+  const config = KINDS[kind];
+  const [name, setName] = useState(config.read(entity));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const empty = name.trim() === "";
@@ -22,8 +28,7 @@ export function RenameDialog({ entity, kind, onClose, onSaved }) {
     setSaving(true);
     setError("");
     try {
-      if (isCollection) await updateCollection(entity.id, { title: name.trim() });
-      else await updateSpeaker(entity.id, { name: name.trim() });
+      await config.save(entity.id, name.trim());
       onSaved();
       onClose();
     } catch (err) {
@@ -38,12 +43,12 @@ export function RenameDialog({ entity, kind, onClose, onSaved }) {
         <DialogCloseButton />
         <form onSubmit={handleSubmit} className="contents">
           <DialogHeader>
-            <DialogTitle>{isCollection ? "Sunting Koleksi Kitab" : "Sunting Penceramah"}</DialogTitle>
-            <DialogDescription className="sr-only">Tukar nama {isCollection ? "koleksi kitab" : "penceramah"}.</DialogDescription>
+            <DialogTitle>{config.title}</DialogTitle>
+            <DialogDescription className="sr-only">Tukar nama {config.noun}.</DialogDescription>
           </DialogHeader>
           <FieldGroup>
             <Field data-invalid={empty || undefined}>
-              <FieldLabel htmlFor="urus-nama">{isCollection ? "Nama Koleksi Kitab" : "Nama Penceramah"}</FieldLabel>
+              <FieldLabel htmlFor="urus-nama">{config.label}</FieldLabel>
               <Input id="urus-nama" value={name} aria-invalid={empty} onChange={(e) => setName(e.target.value)} />
               {empty && <FieldError>Nama diperlukan.</FieldError>}
             </Field>

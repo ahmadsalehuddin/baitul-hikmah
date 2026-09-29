@@ -47,7 +47,7 @@ export async function fetchVideos(params = {}) {
   return res.json();
 }
 
-/** Raw Video record (has `channel_name`, unlike the list items). */
+/** Raw Video record (has fields such as `channel_name` that the list items lack). */
 export async function fetchVideo(videoId) {
   const res = await apiFetch(`/videos/${videoId}`);
   if (!res.ok) throw new Error("Gagal memuatkan butiran video");
@@ -93,6 +93,12 @@ export async function fetchCollections(speakerId = null) {
   const path = speakerId ? `/collections?speaker_id=${speakerId}` : `/collections`;
   const res = await apiFetch(path);
   if (!res.ok) throw new Error("Gagal memuatkan koleksi kitab");
+  return res.json();
+}
+
+export async function fetchLocations() {
+  const res = await apiFetch(`/locations`);
+  if (!res.ok) throw new Error("Gagal memuatkan senarai lokasi");
   return res.json();
 }
 
@@ -220,6 +226,49 @@ export async function mergeCollections(sourceCollectionId, targetCollectionId) {
     body: JSON.stringify({
       source_collection_id: sourceCollectionId,
       target_collection_id: targetCollectionId,
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw data;
+  return data;
+}
+
+export async function createLocation(payload) {
+  const res = await apiFetch(`/locations`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (!res.ok) throw data;
+  return data;
+}
+
+export async function updateLocation(locationId, payload) {
+  const res = await apiFetch(`/locations/${locationId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (!res.ok) throw data;
+  return data;
+}
+
+export async function deleteLocation(locationId) {
+  const res = await apiFetch(`/locations/${locationId}`, { method: "DELETE" });
+  const data = await res.json();
+  if (!res.ok) throw data;
+  return data;
+}
+
+export async function mergeLocations(sourceLocationId, targetLocationId) {
+  const res = await apiFetch(`/locations/merge`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      source_location_id: sourceLocationId,
+      target_location_id: targetLocationId,
     }),
   });
   const data = await res.json();

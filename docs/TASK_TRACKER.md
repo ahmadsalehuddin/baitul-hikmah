@@ -16,7 +16,7 @@ This living document tracks the status of all activities across the project, cle
 | **Phase 5** | Total Frontend Rework & Admin Suite (Urus & Tambah) | Claude Code | **COMPLETED** |
 | **Phase 6** | Containerization, Cloudflare Tunnel & HP Z240 Deployment | Claude / Gemini / User | **COMPLETED** |
 | **Phase 7** | Frontend Redesign — Obra shadcn/ui ([spec §8](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md)) | Claude & User | **IN PROGRESS** (7.1–7.5 implemented & deployed; user device review pending) |
-| **Phase 8** | Lokasi (place of the lecture) field ([spec §8.5](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md)) | Claude & User | **READY TO IMPLEMENT** (requirements final) |
+| **Phase 8** | Lokasi (place of the lecture) field ([spec §8.5](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md)) | Claude & User | **IMPLEMENTED — awaiting commit & deploy** (2026-09-29) |
 
 ---
 
@@ -189,15 +189,18 @@ This living document tracks the status of all activities across the project, cle
 - [ ] **User:** Test on the live site (hard-refresh): paste 3–5 links incl. a duplicate on Tambah Ceramah (one card per unique video, site stays responsive during the fetch); check card hover and Urus Pustaka tab transitions.
 
 ### Phase 8: Lokasi (place of the lecture)
-*Planned 2026-09-29. Spec: [`architecture-specs.md` §8.5](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md). Nothing is implemented; wait for the System Owner's go-ahead before coding.*
+*Planned 2026-09-29, implemented 2026-09-29 (not yet committed or deployed). Spec + implementation notes: [`architecture-specs.md` §8.5](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md).*
 
 - [x] **User:** Go-ahead to start, and open items L1–L3 all resolved 2026-09-29. Go-ahead given; **implement in a new session**. Name: **Lokasi**.
-- [ ] **Claude:** Backend: `Location` table + `Video.location_id`; `GET/POST/PUT/DELETE /locations` + `POST /locations/merge`; `PUT /videos/{id}` accepts `location_id` / `location_name`; nested `location` in video payloads.
-- [ ] **Claude:** Sunting Butiran: **Lokasi** picker (`EntityCombobox`).
-- [ ] **Claude:** Urus Pustaka: new **Lokasi** tab (Sunting / Gabung / Padam), like Koleksi Kitab (§8.5 item 7).
-- [ ] **Claude:** Player: Lokasi Badge from `video.location` with the **`MapPin`** icon (replaces the awkward `CirclePlay` channel Badge).
-- [ ] **Claude:** One-off backfill of the 66 videos that have a place in their title (DB backup first); the other 156 stay empty.
-- [ ] **Claude:** Best-effort auto-fill in `batch-fetch` (known-name match, then place-keyword segment); never blocks a download.
-- [ ] **Claude:** Update spec §8.4-style implementation notes, deploy (`docker compose build backend frontend && docker compose up -d --no-deps backend frontend`), tick these boxes.
+- [x] **Claude:** Backend: `Location` table + `Video.location_id`; `GET/POST/PUT/DELETE /locations` + `POST /locations/merge`; `PUT /videos/{id}` accepts `location_id` / `location_name`; nested `location` in video payloads.
+- [x] **Claude:** Sunting Butiran: **Lokasi** picker (`EntityCombobox`).
+- [x] **Claude:** Urus Pustaka: new **Lokasi** tab (Sunting / Gabung / Padam), like Koleksi Kitab (§8.5 item 7).
+- [x] **Claude (System Owner request 2026-09-29):** the "Tambah Penceramah atau Koleksi" button is now **specific to the active tab**: *Tambah Koleksi Kitab* / *Tambah Penceramah* / *Tambah Lokasi*; on the Ceramah tab it is *Tambah Ceramah* (links to `/tambah`). The Radio Group in the add dialog is gone (one dialog per kind).
+- [x] **Claude:** Player: Lokasi Badge from `video.location` with the **`MapPin`** icon (replaces the awkward `CirclePlay` channel Badge).
+- [x] **Claude:** One-off backfill script `backend/scripts/backfill_location.py` (backs up the DB first; idempotent; `--dry-run`). Verified on a copy of the live DB: 66 linked (42 / 21 / 3), 156 left empty. **Not yet run on the live DB — runs at deploy.**
+- [x] **Claude:** Best-effort auto-fill in `batch-fetch` (known-name match, then place-keyword segment); never blocks a download.
+- [x] **Claude:** Spec implementation notes written (§8.5).
+- [x] **Claude (bug found while testing, fixed):** *Gabung* on Koleksi Kitab silently orphaned the moved videos (their `collection_id` became empty). Same fix applied to the new Lokasi merge. Details in §8.5 notes. **The live library may already contain videos orphaned by past merges — see the note; needs a System Owner decision.**
+- [ ] **Claude:** Deploy (`docker compose build backend frontend && docker compose up -d --no-deps backend frontend`), then run the backfill on the live DB. *Waiting for the System Owner's go-ahead (check for pending/downloading videos first).*
 - [ ] **User:** Review on the live site.
 

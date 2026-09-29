@@ -433,18 +433,18 @@ def verify_safe_path(target_path: Path, allowed_root: Path) -> Path:
 
 #### 8.3.7 Sunting Butiran Ceramah (Dialog)
 - Thumbnail preview with two overlay icon Buttons: **upload own image** and **reset to default thumbnail** (original YouTube thumbnail).
-- Fields: **Tajuk Ceramah** (Input Group with character counter), **Siri** (number, optional — addition to mockup), **Nama Koleksi Kitab** and **Penceramah** (Combobox with inline "+ Tambah '{typed}'" to create new).
+- Fields: **Tajuk Ceramah** (Input Group with character counter), **Siri** (number, optional — addition to mockup), **Nama Koleksi Kitab**, **Penceramah** and **Lokasi** (§8.5) (Combobox with inline "+ Tambah '{typed}'" to create new).
 - Footer: **Batal** (outline), **Simpan** (primary).
 - **Title length (O5 resolved):** max **200** characters in this form (counter `n/200`). Existing longer titles are kept until edited.
 
 #### 8.3.8 Urus Pustaka (`/urus`) — redesign of the live management screen
 The "Fungsi Baharu Sedang Dibangunkan" mockup is obsolete. Redesign keeps all live functionality:
 - **Storage health** Card: 2TB usage Progress, free space, low-disk Alert `variant="warning"`.
-- **Tabs:** *Ceramah* | *Koleksi Kitab* | *Penceramah* (also reachable from the "Urus Pustaka ⌄" nav menu).
+- **Tabs:** *Ceramah* | *Koleksi Kitab* | *Penceramah* | *Lokasi* (§8.5) (also reachable from the "Urus Pustaka ⌄" nav menu).
   - *Ceramah:* Table with search (Input Group) and Penceramah filter (Select/Combobox); row actions via Dropdown Menu: Sunting (opens §8.3.7 dialog), Cuba Semula (failed items), Padam (Alert Dialog).
   - *Koleksi Kitab:* Table with video counts; Sunting, Gabung (merge), Padam.
   - *Penceramah:* Table with video counts; Sunting.
-  - "Tambah Penceramah atau Koleksi" dialog: Dialog + Field + Radio Group (type).
+  - **Add button follows the active tab** (System Owner 2026-09-29; replaces the single "Tambah Penceramah atau Koleksi" button): *Koleksi Kitab* → "Tambah Koleksi Kitab", *Penceramah* → "Tambah Penceramah", *Lokasi* → "Tambah Lokasi" (each opens a Dialog + Field for that one kind, no type Radio Group); *Ceramah* → "Tambah Ceramah" (link to `/tambah`).
 - Phone: tables collapse to Card lists.
 - Non-admin: Empty state "Akses Ditolak" + "Kembali ke Laman Utama".
 
@@ -614,8 +614,8 @@ The "Fungsi Baharu Sedang Dibangunkan" mockup is obsolete. Redesign keeps all li
 - **Decision (System Owner, 2026-09-29):** animation classes are applied as `className` at the usage site, never inside generated `components/ui/*` files (§8.1.2). Reading of §8.1.3: motion/animation utilities are not colour/font/radius/shadow overrides, so they are allowed as `className` on shadcn components; keep them `motion-safe:` and token/built-in-utility only.
 - Also carried over from 7.3b item 6: the `group-hover:shadow-md` on the card thumbnail wrapper is a shadow on a non-shadcn element (same category as audit item 1).
 
-### 8.5 Lokasi (place of the lecture) — PLANNED, not implemented
-*Requirement raised by the System Owner 2026-09-29; approach agreed the same day. Not started: needs a go-ahead to code. Bound by §8.1.*
+### 8.5 Lokasi (place of the lecture) — IMPLEMENTED 2026-09-29 (not yet deployed)
+*Requirement raised by the System Owner 2026-09-29; approach agreed the same day. Implemented the same day; see "Implementation notes" at the end of this section. Bound by §8.1.*
 
 **Problem.** A ceramah has a place (e.g. *Masjid Al Ghaffar Jasin*, *Madrasah Al Ikhlas*) besides Penceramah and Koleksi Kitab, but it is not a real field. Facts checked in the live DB (2026-09-29): all 222 titles use the pipe format, but only 66 have a place segment (`Kitab | Penceramah | Lokasi | Siri N`; Masjid Al Ghaffar Jasin 42, Madrasah Al Ikhlas 21, Masjid As Sobirin 3) and 156 have none (`Kitab | Penceramah | Siri N`). For the 66, the text sits in `Video.channel_name` because the legacy migration (§5.2) put it there; the player's channel Badge therefore *happens* to show it. **New downloads never set it**: `fetch_video_metadata` reads only id, title, duration, uploader, thumbnail, description, and `yt-dlp` does not supply a usable place (its `location` field only exists if the uploader set YouTube's optional recording location; not verified on our videos, all sampled ones are now private). Future titles may not follow the pipe format at all, so **titles are a hint, never the source of truth.**
 
@@ -630,7 +630,7 @@ The "Fungsi Baharu Sedang Dibangunkan" mockup is obsolete. Redesign keeps all li
 3. **Sunting Butiran (§8.3.7):** one more Field **Lokasi** under Penceramah, using the existing `EntityCombobox` (pick existing, or "＋ Tambah '…'" to create on Simpan). Unset shows "Belum ditentukan" elsewhere.
 4. **Player (§8.3.5):** Badge with `MapPin` showing `video.location.name`, replacing the `channel_name` Badge (no Link for now).
 5. **Backfill (one-off, idempotent, like 7.2):** create `Location` rows for the 3 known places and link the 66 videos (from the 3rd pipe segment when the title has ≥4 segments). Back up the DB first. The other 156 stay empty until set by hand.
-7. **Urus Pustaka (§8.3.8):** a fourth tab **Lokasi** (`?tab=lokasi`), same pattern as the Koleksi Kitab tab (Table ≥640px / Card list <640px, `RowActions`): **Sunting** (rename dialog), **Gabung** (merge dialog), **Padam** (disabled with "(lokasi digunakan)" while videos use it; API `detail` errors shown in the confirm dialog). The existing **Tambah Penceramah atau Koleksi** button is left unchanged — Lokasi entries are created from Sunting Butiran ("＋ Tambah '…'") or by auto-fill.
+7. **Urus Pustaka (§8.3.8):** a fourth tab **Lokasi** (`?tab=lokasi`), same pattern as the Koleksi Kitab tab (Table ≥640px / Card list <640px, `RowActions`): **Sunting** (rename dialog), **Gabung** (merge dialog), **Padam** (disabled with "(lokasi digunakan)" while videos use it; API `detail` errors shown in the confirm dialog). The add button became **tab-specific** on the System Owner's request (§8.3.8), so the Lokasi tab has its own **Tambah Lokasi** button; Lokasi entries can also be created from Sunting Butiran ("＋ Tambah '…'") or by auto-fill.
 6. **Auto-fill on `batch-fetch` (suggestion only; must never block or fail a download):** (a) if any pipe segment equals an existing Lokasi name (case-insensitive), link it; (b) else if a segment starts with a place keyword (Masjid, Madrasah, Surau, Dewan) and the title has ≥4 segments, create that Lokasi and link it; (c) otherwise leave blank. The admin corrects anything in Sunting Butiran.
 
 **Out of scope (System Owner 2026-09-29: "no need yet"):** a Lokasi line on library cards, a "Lokasi" filter in Tapis, a `/lokasi/:id` page. Add only if the System Owner asks later.
@@ -640,5 +640,28 @@ The "Fungsi Baharu Sedang Dibangunkan" mockup is obsolete. Redesign keeps all li
 - ~~L2 — Place-keyword list and Malay wording~~ **Resolved 2026-09-29: Yes**, keyword list as in rule (b): Masjid, Madrasah, Surau, Dewan; picker wording follows the Penceramah/Koleksi pickers.
 - ~~L3 — Extras~~ **Resolved 2026-09-29:** cards line **No**, Tapis filter **No**, Urus Pustaka **Lokasi tab Yes** (now in scope, item 7).
 
-**All open items resolved. Implementation to be done in a new chat/session (System Owner's instruction); requirements finalized.**
+**All open items resolved; requirements finalized.**
+
+#### Implementation notes (2026-09-29) — for the next agent
+*Verified against a copy of the live DB (temp `STORAGE_DIR`, `yt-dlp` mocked) and in a real browser (desktop + phone width); production was not touched.*
+
+**Backend**
+- **Schema:** `Location(id, name UNIQUE, created_at)` in `models/schema.py`; `Video.location_id` (nullable FK). `database.py` `ADDITIVE_COLUMNS` gained `("video", "location_id", 'INTEGER REFERENCES "location"(id)')`; the `location` table itself is made by `create_all`. Both run at startup, so deploying is enough to migrate.
+- **Service `app/services/locations.py`:** `find_location` (case-insensitive), `get_or_create_location`, `title_segments` (splits on `|` and `｜`), `place_from_title` (rule b), `suggest_location` (rules a → b), `suggest_location_safely` (wraps it; on any error it rolls back, logs and returns `None`).
+- **Router `app/api/locations.py`** (included in `main.py`): `GET /api/locations` (public, sorted by name, each with `video_count`); admin-only `POST /api/locations` (409 on duplicate name, case-insensitive), `PUT /api/locations/{id}` (rename; 409 if another Lokasi has that name), `DELETE /api/locations/{id}` (409 with a Malay `detail` while videos use it), `POST /api/locations/merge` (`source_location_id`, `target_location_id`). Names: max 200 chars, blank rejected (400).
+- **Videos:** `PUT /api/videos/{id}` accepts `location_id` (404 if it does not exist) or `location_name` (find-or-create; wins over the id, like `speaker_name`). `GET /api/videos` and `GET /api/progress/continue-watching` items carry `location: {id, name} | null`. `GET /api/videos/{id}` is still the raw `Video`, so it has `location_id` only (no nested object) — the player and Sunting use the list items.
+- **Auto-fill in `batch-fetch`:** applied to newly queued videos and to retried ones that have no Lokasi yet; never overwrites an existing Lokasi. Verified: `masjid as sobirin` (case differs) links the known one; `Surau Al Amin Muar` creates and links; a 4-segment title without a keyword, a 3-segment title and a title without pipes stay empty; a forced exception in the auto-fill still returns 200 and queues the download.
+- **Backfill `backend/scripts/backfill_location.py`:** `--dry-run` supported; copies the DB to `baitul_hikmah.db.bak-<timestamp>` (in the storage dir) before writing; links from the 3rd segment of titles with ≥4 segments; never overwrites. Each run makes a backup, even when there is nothing to change. **Run on the live DB after deploy**, from the host: `cd backend && ./venv/bin/python scripts/backfill_location.py --dry-run`, then without `--dry-run`.
+- **Bug fixed while testing — Gabung orphaned videos.** `merge_collections` set `collection_id` on each video, then deleted the source; SQLAlchemy then nulled the FK of every video still listed in `source.videos`, so the moved videos ended up with **no** collection (on the DB copy: merging a 21-video collection into a 30-video one left 30, not 51). Fixed in both `merge_collections` and the new `merge_locations` with one bulk `UPDATE` (returns the real moved count) before the delete. **Open question for the System Owner:** any Gabung already done on the live site may have left videos without a Koleksi Kitab; the app cannot tell which ones — check Urus Pustaka → Ceramah for videos with no Koleksi, or restore from a backup.
+
+**Frontend**
+- `lib/api.js`: `fetchLocations`, `createLocation`, `updateLocation`, `deleteLocation`, `mergeLocations`. `hooks/use-entities.js` also returns `locations` and `locationsById` (loaded together with speakers and collections).
+- `SuntingButiranDialog`: **Lokasi** Field under Penceramah (`EntityCombobox`, placeholder "Belum ditentukan", hint "Lokasi baharu akan ditambah apabila anda menyimpan."). There is no way to clear a Lokasi once set (same as Penceramah / Koleksi).
+- `components/urus/LocationTab.jsx` (new): same pattern as `CollectionTab`; Padam is disabled with "Padam (lokasi digunakan)" while `video_count > 0`.
+- `RenameDialog`, `MergeDialog`, `AddEntityDialog` are now driven by a `kind` (`collection` | `speaker` | `location`; Merge: `collection` | `location`). `AddEntityDialog` takes one `kind` instead of the type Radio Group. `UrusPustakaPage`: `TABS` has `lokasi`; the add button comes from `ADD_BUTTONS[tab]`; one delete-confirmation config per kind.
+- `Navbar`: "Urus Pustaka" menu (desktop + phone sheet) has a **Lokasi** entry (`MapPin`).
+- `PlayerDialog`: the `CirclePlay` channel Badge is replaced by a `MapPin` Badge from `video.location.name` (hidden when empty; no Link). `channel_name` is no longer shown anywhere.
+- No `components/ui/` file was touched and no theme token changed (§8.1). `npm run build` passes.
+
+**Not done / decisions for the System Owner:** the Ceramah tab's add button is "Tambah Ceramah" linking to `/tambah` (a choice made because that tab has nothing else to add; easy to hide instead). The library search does not look at Lokasi (out of scope above).
 

@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from app.core.config import APP_TITLE, APP_DESCRIPTION, VERSION, CORS_ORIGINS, THUMBNAILS_DIR
 from app.core.database import init_db
 from app.api.videos import router as videos_router
+from app.api.locations import router as locations_router
 from app.api.auth import router as auth_router
 from app.api.progress import router as progress_router
 from app.api.favorites import router as favorites_router
@@ -42,6 +43,7 @@ app.mount("/storage/thumbnails", StaticFiles(directory=str(THUMBNAILS_DIR)), nam
 
 # Mount API routes
 app.include_router(videos_router, prefix="/api")
+app.include_router(locations_router, prefix="/api")
 app.include_router(auth_router, prefix="/api")
 app.include_router(progress_router, prefix="/api")
 app.include_router(favorites_router, prefix="/api")

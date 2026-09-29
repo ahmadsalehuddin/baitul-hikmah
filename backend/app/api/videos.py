@@ -6,7 +6,7 @@ from sqlmodel import Session, select, update, or_, desc, asc
 from app.core.database import get_session
 from app.core.auth import get_optional_user, require_admin
 from app.models.schema import (
-    User, Video, Speaker, Collection, VideoStatus, UserVideoProgress,
+    User, Video, Speaker, Collection, Location, VideoStatus, UserVideoProgress,
     BatchFetchRequest, VideoUpdateRequest,
     SpeakerCreateRequest, SpeakerUpdateRequest,
     CollectionCreateRequest, CollectionUpdateRequest, CollectionMergeRequest,
@@ -20,6 +20,7 @@ import os
 from app.core.config import VIDEOS_DIR, STORAGE_DIR
 from app.services.streamer import create_video_streaming_response, verify_safe_path
 from app.services.series import parse_series_number
+from app.services.locations import get_or_create_location, suggest_location_safely
 from app.services.thumbnails import (
     MAX_UPLOAD_BYTES, sniff_image_extension, convert_image_to_webp,
     new_custom_thumbnail_target, thumbnail_fs_path, delete_thumbnail_file,
@@ -98,6 +99,9 @@ async def batch_fetch_videos(
             session.commit()
             session.refresh(speaker)
 
+        # Best-effort Lokasi from the title (spec §8.5); never blocks or fails the download.
+        location = suggest_location_safely(session, title) if not (existing and existing.location_id) else None
+
         video = existing or Video(
             youtube_url=url,
             youtube_id=yt_id,
@@ -109,6 +113,8 @@ async def batch_fetch_videos(
             status=VideoStatus.pending,
             progress_percent=0.0
         )
+        if location:
+            video.location_id = location.id
         session.add(video)
         session.commit()
         session.refresh(video)
@@ -234,7 +240,7 @@ async def list_videos(
             for p in session.exec(progress_stmt).all():
                 progress_map[p.video_id] = p
 
-    # Enrich with speaker, collection, and per-user progress/favorite data
+    # Enrich with speaker, collection, location, and per-user progress/favorite data
     result = []
     for v in videos:
         entry = {
@@ -254,7 +260,11 @@ async def list_videos(
             "collection": {
                 "id": v.collection.id,
                 "title": v.collection.title
-            } if v.collection else None
+            } if v.collection else None,
+            "location": {
+                "id": v.location.id,
+                "name": v.location.name
+            } if v.location else None
         }
 
         user_progress = None
@@ -327,6 +337,14 @@ async def update_video(
         video.collection_id = collection.id
     elif payload.collection_id is not None:
         video.collection_id = payload.collection_id
+
+    # Handle Lokasi update or create on the fly
+    if payload.location_name:
+        video.location_id = get_or_create_location(session, payload.location_name).id
+    elif payload.location_id is not None:
+        if not session.get(Location, payload.location_id):
+            raise HTTPException(status_code=404, detail="Lokasi tidak ditemui")
+        video.location_id = payload.location_id
 
     # series_number is nullable, so "absent" (leave alone) must differ from null (clear it)
     if "series_number" in payload.model_fields_set:

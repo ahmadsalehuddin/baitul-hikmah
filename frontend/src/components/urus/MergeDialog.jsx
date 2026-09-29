@@ -6,14 +6,29 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
-import { mergeCollections } from "@/lib/api";
+import { mergeCollections, mergeLocations } from "@/lib/api";
 
-/** Gabung: move every ceramah of `source` into another Koleksi Kitab, then delete `source`. Render while merging. */
-export function MergeDialog({ source, collections, onClose, onMerged }) {
+const KINDS = {
+  collection: {
+    title: "Gabungkan Koleksi", noun: "koleksi", placeholder: "Pilih koleksi sasaran", failure: "Gagal menggabungkan koleksi.",
+    read: (e) => e.title, merge: mergeCollections,
+  },
+  location: {
+    title: "Gabungkan Lokasi", noun: "lokasi", placeholder: "Pilih lokasi sasaran", failure: "Gagal menggabungkan lokasi.",
+    read: (e) => e.name, merge: mergeLocations,
+  },
+};
+
+/**
+ * Gabung: move every ceramah of `source` into another entry of the same `kind` (`"collection"` or
+ * `"location"`), then delete `source`. `entities` is the full list of that kind. Render while merging.
+ */
+export function MergeDialog({ source, kind, entities, onClose, onMerged }) {
+  const config = KINDS[kind];
   const [targetId, setTargetId] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const targets = collections.filter((c) => c.id !== source.id);
+  const targets = entities.filter((e) => e.id !== source.id);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -21,11 +36,11 @@ export function MergeDialog({ source, collections, onClose, onMerged }) {
     setSaving(true);
     setError("");
     try {
-      await mergeCollections(source.id, Number(targetId));
+      await config.merge(source.id, Number(targetId));
       onMerged();
       onClose();
     } catch (err) {
-      setError(err?.detail || "Gagal menggabungkan koleksi.");
+      setError(err?.detail || config.failure);
       setSaving(false);
     }
   }
@@ -36,10 +51,10 @@ export function MergeDialog({ source, collections, onClose, onMerged }) {
         <DialogCloseButton />
         <form onSubmit={handleSubmit} className="contents">
           <DialogHeader>
-            <DialogTitle>Gabungkan Koleksi</DialogTitle>
+            <DialogTitle>{config.title}</DialogTitle>
             <DialogDescription>
-              Semua {source.video_count} ceramah dalam “{source.title}” akan dipindahkan ke koleksi sasaran, dan koleksi ini
-              akan dipadam.
+              Semua {source.video_count} ceramah dalam “{config.read(source)}” akan dipindahkan ke {config.noun} sasaran, dan{" "}
+              {config.noun} ini akan dipadam.
             </DialogDescription>
           </DialogHeader>
           <FieldGroup>
@@ -47,12 +62,12 @@ export function MergeDialog({ source, collections, onClose, onMerged }) {
               <FieldLabel htmlFor="urus-gabung">Gabung Ke Dalam</FieldLabel>
               <Select value={targetId} onValueChange={setTargetId}>
                 <SelectTrigger id="urus-gabung" className="w-full">
-                  <SelectValue placeholder="Pilih koleksi sasaran" />
+                  <SelectValue placeholder={config.placeholder} />
                 </SelectTrigger>
                 <SelectContent>
-                  {targets.map((c) => (
-                    <SelectItem key={c.id} value={String(c.id)}>
-                      {c.title} ({c.video_count} ceramah)
+                  {targets.map((e) => (
+                    <SelectItem key={e.id} value={String(e.id)}>
+                      {config.read(e)} ({e.video_count} ceramah)
                     </SelectItem>
                   ))}
                 </SelectContent>

@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router";
-import { LibraryBig, LogOut, Menu, User, Users, Video } from "lucide-react";
+import { LibraryBig, LogOut, MapPin, Menu, User, Users, Video } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,6 +53,7 @@ const URUS_ITEMS = [
   { tab: "ceramah", label: "Ceramah", icon: Video },
   { tab: "koleksi", label: "Koleksi Kitab", icon: LibraryBig },
   { tab: "penceramah", label: "Penceramah", icon: User },
+  { tab: "lokasi", label: "Lokasi", icon: MapPin },
 ];
 
 function BrandLink() {

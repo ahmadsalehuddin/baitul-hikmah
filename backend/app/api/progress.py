@@ -61,6 +61,10 @@ async def get_continue_watching(
                 "id": video.collection.id,
                 "title": video.collection.title,
             } if video.collection else None,
+            "location": {
+                "id": video.location.id,
+                "name": video.location.name,
+            } if video.location else None,
         })
     return result
 

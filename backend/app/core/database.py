@@ -16,6 +16,7 @@ ADDITIVE_COLUMNS = [
     ("video", "series_number", "INTEGER"),
     ("video", "is_custom_thumbnail", "BOOLEAN NOT NULL DEFAULT 0"),
     ("video", "original_thumbnail_path", "VARCHAR"),
+    ("video", "location_id", 'INTEGER REFERENCES "location"(id)'),
 ]
 
 def apply_additive_migrations():

@@ -61,6 +61,16 @@ class Collection(CollectionBase, table=True):
     speaker: Optional[Speaker] = Relationship(back_populates="collections")
     videos: List["Video"] = Relationship(back_populates="collection")
 
+class LocationBase(SQLModel):
+    name: str = Field(unique=True, index=True, max_length=200)
+
+class Location(LocationBase, table=True):
+    """Lokasi: the place of a lecture (e.g. "Masjid Al Ghaffar Jasin"). Spec §8.5."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    videos: List["Video"] = Relationship(back_populates="location")
+
 class VideoBase(SQLModel):
     youtube_url: str = Field(index=True)
     youtube_id: Optional[str] = Field(default=None, index=True)
@@ -71,6 +81,7 @@ class VideoBase(SQLModel):
     file_size_bytes: int = Field(default=0)
     speaker_id: Optional[int] = Field(default=None, foreign_key="speaker.id")
     collection_id: Optional[int] = Field(default=None, foreign_key="collection.id")
+    location_id: Optional[int] = Field(default=None, foreign_key="location.id")
     series_number: Optional[int] = None
     added_by_user_id: Optional[int] = Field(default=None, foreign_key="user.id")
 
@@ -94,6 +105,7 @@ class Video(VideoBase, table=True):
 
     speaker: Optional[Speaker] = Relationship(back_populates="videos")
     collection: Optional[Collection] = Relationship(back_populates="videos")
+    location: Optional[Location] = Relationship(back_populates="videos")
     added_by_user: Optional[User] = Relationship(back_populates="added_videos")
     progress_records: List["UserVideoProgress"] = Relationship(back_populates="video")
 
@@ -140,6 +152,8 @@ class VideoUpdateRequest(SQLModel):
     speaker_name: Optional[str] = None
     collection_id: Optional[int] = None
     collection_title: Optional[str] = None
+    location_id: Optional[int] = None
+    location_name: Optional[str] = None
     # Only applied when the key is present in the request body; an explicit null clears it.
     series_number: Optional[int] = Field(default=None, ge=1, le=9999)
 
@@ -169,3 +183,13 @@ class CollectionUpdateRequest(SQLModel):
 class CollectionMergeRequest(SQLModel):
     source_collection_id: int
     target_collection_id: int
+
+class LocationCreateRequest(SQLModel):
+    name: str
+
+class LocationUpdateRequest(SQLModel):
+    name: Optional[str] = None
+
+class LocationMergeRequest(SQLModel):
+    source_location_id: int
+    target_location_id: int

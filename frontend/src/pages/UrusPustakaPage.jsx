@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import { Plus } from "lucide-react";
 import { AdminGate } from "@/components/AdminGate";
 import { PageLayout } from "@/components/PageLayout";
@@ -7,6 +7,7 @@ import { SuntingButiranDialog } from "@/components/SuntingButiranDialog";
 import { AddEntityDialog } from "@/components/urus/AddEntityDialog";
 import { CollectionTab } from "@/components/urus/CollectionTab";
 import { ConfirmDeleteDialog } from "@/components/urus/ConfirmDeleteDialog";
+import { LocationTab } from "@/components/urus/LocationTab";
 import { MergeDialog } from "@/components/urus/MergeDialog";
 import { RenameDialog } from "@/components/urus/RenameDialog";
 import { SpeakerTab } from "@/components/urus/SpeakerTab";
@@ -16,9 +17,29 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEntities } from "@/hooks/use-entities";
 import { useLibrary } from "@/hooks/use-library";
-import { deleteCollection, deleteVideo, fetchStorageMetrics, getDownloadTasks, retryVideoDownload } from "@/lib/api";
+import { deleteCollection, deleteLocation, deleteVideo, fetchStorageMetrics, getDownloadTasks, retryVideoDownload } from "@/lib/api";
 
-const TABS = ["ceramah", "koleksi", "penceramah"];
+const TABS = ["ceramah", "koleksi", "penceramah", "lokasi"];
+
+// The add button follows the active tab: it adds exactly what that tab lists (Ceramah goes to /tambah).
+const ADD_BUTTONS = {
+  koleksi: { kind: "collection", label: "Tambah Koleksi Kitab" },
+  penceramah: { kind: "speaker", label: "Tambah Penceramah" },
+  lokasi: { kind: "location", label: "Tambah Lokasi" },
+};
+
+const DELETE_CONFIRMATIONS = {
+  collection: {
+    title: "Padam Koleksi Kitab?",
+    description: (c) => `Koleksi “${c.title}” akan dipadam secara kekal. Tindakan ini hanya boleh dilakukan jika koleksi tidak mempunyai ceramah.`,
+    remove: deleteCollection,
+  },
+  location: {
+    title: "Padam Lokasi?",
+    description: (l) => `Lokasi “${l.name}” akan dipadam secara kekal. Tindakan ini hanya boleh dilakukan jika lokasi tidak mempunyai ceramah.`,
+    remove: deleteLocation,
+  },
+};
 
 /** Urus Pustaka (spec §8.3.8): storage Card, Tabs (`?tab=`) with Tables / Card lists, dialogs for every action. */
 function UrusPustaka() {
@@ -26,16 +47,16 @@ function UrusPustaka() {
   const tab = TABS.includes(params.get("tab")) ? params.get("tab") : "ceramah";
 
   const { library, loaded, refresh: refreshLibrary } = useLibrary();
-  const { speakers, collections, reload: reloadEntities } = useEntities();
+  const { speakers, collections, locations, reload: reloadEntities } = useEntities();
   const [storage, setStorage] = useState(null);
   const [failed, setFailed] = useState([]);
 
-  const [adding, setAdding] = useState(false);
+  const [adding, setAdding] = useState(null); // entity kind being added, or null
   const [editingVideo, setEditingVideo] = useState(null);
   const [deletingVideo, setDeletingVideo] = useState(null);
   const [renaming, setRenaming] = useState(null); // { entity, kind }
-  const [merging, setMerging] = useState(null);
-  const [deletingCollection, setDeletingCollection] = useState(null);
+  const [merging, setMerging] = useState(null); // { entity, kind }
+  const [deletingEntity, setDeletingEntity] = useState(null); // { entity, kind }
 
   const loadStorage = useCallback(() => {
     fetchStorageMetrics().then(setStorage).catch(console.error);
@@ -77,19 +98,29 @@ function UrusPustaka() {
   const collectionHandlers = useMemo(
     () => ({
       onRename: (entity) => setRenaming({ entity, kind: "collection" }),
-      onMerge: setMerging,
-      onDelete: setDeletingCollection,
+      onMerge: (entity) => setMerging({ entity, kind: "collection" }),
+      onDelete: (entity) => setDeletingEntity({ entity, kind: "collection" }),
+    }),
+    []
+  );
+  const locationHandlers = useMemo(
+    () => ({
+      onRename: (entity) => setRenaming({ entity, kind: "location" }),
+      onMerge: (entity) => setMerging({ entity, kind: "location" }),
+      onDelete: (entity) => setDeletingEntity({ entity, kind: "location" }),
     }),
     []
   );
   const speakerHandlers = useMemo(() => ({ onRename: (entity) => setRenaming({ entity, kind: "speaker" }) }), []);
+
+  const addButton = ADD_BUTTONS[tab];
 
   function selectTab(next) {
     setParams({ tab: next }, { replace: true });
   }
 
   return (
-    <PageLayout title="Urus Pustaka" description="Urus semua koleksi kitab dan penceramah di satu tempat.">
+    <PageLayout title="Urus Pustaka" description="Urus semua koleksi kitab, penceramah dan lokasi di satu tempat.">
       <StorageCard storage={storage} />
 
       <Tabs value={tab} onValueChange={selectTab} className="gap-4">
@@ -98,11 +129,21 @@ function UrusPustaka() {
             <TabsTrigger value="ceramah">Ceramah</TabsTrigger>
             <TabsTrigger value="koleksi">Koleksi Kitab</TabsTrigger>
             <TabsTrigger value="penceramah">Penceramah</TabsTrigger>
+            <TabsTrigger value="lokasi">Lokasi</TabsTrigger>
           </TabsList>
-          <Button onClick={() => setAdding(true)}>
-            <Plus data-icon="inline-start" />
-            Tambah Penceramah atau Koleksi
-          </Button>
+          {addButton ? (
+            <Button onClick={() => setAdding(addButton.kind)}>
+              <Plus data-icon="inline-start" />
+              {addButton.label}
+            </Button>
+          ) : (
+            <Button asChild>
+              <Link to="/tambah">
+                <Plus data-icon="inline-start" />
+                Tambah Ceramah
+              </Link>
+            </Button>
+          )}
         </div>
 
         <TabsContent value="ceramah" className="motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-1 motion-safe:duration-200">
@@ -121,13 +162,16 @@ function UrusPustaka() {
         <TabsContent value="penceramah" className="motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-1 motion-safe:duration-200">
           <SpeakerTab speakers={speakers} handlers={speakerHandlers} />
         </TabsContent>
+        <TabsContent value="lokasi" className="motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-1 motion-safe:duration-200">
+          <LocationTab locations={locations} handlers={locationHandlers} />
+        </TabsContent>
       </Tabs>
 
       {adding && (
         <AddEntityDialog
+          kind={adding}
           speakers={speakers}
-          initialKind={tab === "penceramah" ? "speaker" : "collection"}
-          onClose={() => setAdding(false)}
+          onClose={() => setAdding(null)}
           onCreated={reloadEntities}
         />
       )}
@@ -158,8 +202,9 @@ function UrusPustaka() {
       )}
       {merging && (
         <MergeDialog
-          source={merging}
-          collections={collections}
+          source={merging.entity}
+          kind={merging.kind}
+          entities={merging.kind === "location" ? locations : collections}
           onClose={() => setMerging(null)}
           onMerged={() => {
             reloadEntities();
@@ -167,13 +212,13 @@ function UrusPustaka() {
           }}
         />
       )}
-      {deletingCollection && (
+      {deletingEntity && (
         <ConfirmDeleteDialog
-          title="Padam Koleksi Kitab?"
-          description={`Koleksi “${deletingCollection.title}” akan dipadam secara kekal. Tindakan ini hanya boleh dilakukan jika koleksi tidak mempunyai ceramah.`}
-          onClose={() => setDeletingCollection(null)}
+          title={DELETE_CONFIRMATIONS[deletingEntity.kind].title}
+          description={DELETE_CONFIRMATIONS[deletingEntity.kind].description(deletingEntity.entity)}
+          onClose={() => setDeletingEntity(null)}
           onConfirm={async () => {
-            await deleteCollection(deletingCollection.id);
+            await DELETE_CONFIRMATIONS[deletingEntity.kind].remove(deletingEntity.entity.id);
             reloadEntities();
           }}
         />
