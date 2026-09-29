@@ -154,7 +154,7 @@ This living document tracks the status of all activities across the project, cle
 - [x] **Claude:** Thumbnail upload + reset-to-default endpoints (admin, validated, path-contained).
 - [x] **Claude:** User text-size preference field + endpoint.
 - [x] **Claude:** `Video.series_number` field, auto-parse on download, backfill existing videos.
-- **7.2 implementation notes** (API shapes in [`architecture-specs.md` §8.4](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md)): verified on a temp copy of the DB/media on port 8765 (live DB and media confirmed byte-identical afterwards). **Not yet deployed:** the production backend container must be rebuilt/restarted (columns are added automatically on startup), then run the backfill once: `docker exec baitul_hikmah_backend python scripts/backfill_series_number.py --dry-run`, then again without `--dry-run`.
+- **7.2 implementation notes** (API shapes in [`architecture-specs.md` §8.4](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md)): verified on a temp copy of the DB/media on port 8765 (live DB and media confirmed byte-identical afterwards). **Deployed to production 2026-09-29:** backend container rebuilt (columns added on startup), backfill run once (223 videos matched), DB backup at `~/baitul_hikmah.db.bak-before-7.2`. Future backend changes need `docker compose build backend && docker compose up -d --no-deps backend`.
 
 **7.3 Pages & components**
 - [ ] **Claude:** Navbar + profile menu + phone Sheet (§8.3.3).
