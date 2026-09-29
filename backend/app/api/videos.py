@@ -1,3 +1,4 @@
+import asyncio
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request, UploadFile, File, status
 from fastapi.concurrency import run_in_threadpool
@@ -36,14 +37,19 @@ async def batch_fetch_videos(
     raw_urls = payload.urls[:5] # Max 5 at a time
     valid_urls = []
     invalid_urls = []
+    seen_ids = set()
 
     for u in raw_urls:
         url_clean = u.strip()
         if not url_clean:
             continue
-        if is_valid_youtube_url(url_clean):
-            valid_urls.append(url_clean)
-        else:
+        yt_id = extract_youtube_id(url_clean)
+        if yt_id:
+            # The same video pasted twice (even via different URL forms) is queued once.
+            if yt_id not in seen_ids:
+                seen_ids.add(yt_id)
+                valid_urls.append(url_clean)
+        elif url_clean not in invalid_urls:
             invalid_urls.append(url_clean)
 
     if not valid_urls and invalid_urls:
@@ -54,19 +60,31 @@ async def batch_fetch_videos(
             "queued": []
         }
 
+    # Look up existing records first so completed videos skip the yt-dlp round trip.
+    existing_by_url = {}
+    for url in valid_urls:
+        statement = select(Video).where(Video.youtube_id == extract_youtube_id(url))
+        existing_by_url[url] = session.exec(statement).first()
+
+    # Fetch metadata for all new/retried videos in parallel (yt-dlp is blocking network I/O,
+    # so each lookup runs in its own worker thread, off the event loop).
+    to_fetch = [
+        url for url in valid_urls
+        if not (existing_by_url[url] and existing_by_url[url].status == VideoStatus.completed)
+    ]
+    fetched = await asyncio.gather(*(run_in_threadpool(fetch_video_metadata, url) for url in to_fetch))
+    meta_by_url = dict(zip(to_fetch, fetched))
+
     queued_videos = []
     for url in valid_urls:
         yt_id = extract_youtube_id(url)
-        # Check if video exists
-        statement = select(Video).where(Video.youtube_id == yt_id)
-        existing = session.exec(statement).first()
+        existing = existing_by_url[url]
 
         if existing and existing.status == VideoStatus.completed:
             queued_videos.append(existing)
             continue
 
-        # Extract initial metadata (yt-dlp is blocking network I/O; keep it off the event loop)
-        meta = await run_in_threadpool(fetch_video_metadata, url) or {}
+        meta = meta_by_url.get(url) or {}
         title = meta.get("title", f"Ceramah YouTube ({yt_id})")
         duration = meta.get("duration", 0)
         uploader = meta.get("uploader", "Ustaz")
@@ -98,6 +116,10 @@ async def batch_fetch_videos(
         # Trigger background download
         background_tasks.add_task(start_video_download, video.id, url)
         queued_videos.append(video)
+
+    # Each later commit expires the earlier videos; reload them so they serialize in full.
+    for video in queued_videos:
+        session.refresh(video)
 
     return {
         "status": "success",
