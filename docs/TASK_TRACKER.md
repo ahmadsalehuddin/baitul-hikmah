@@ -227,5 +227,6 @@ This living document tracks the status of all activities across the project, cle
 - [ ] **User:** fix the 6 skipped `Risalah Qurban` videos by hand (Siri 1, 3, 4 exist twice; they keep their long titles after the backfill).
 - [ ] **User:** Review on the live site.
 - [x] **Claude (System Owner request 2026-09-30):** Video card revised: line 2 Penceramah, line 3 `Ditambah oleh {added_by} • date`; Lokasi dropped from the card (still in the player, search and Sunting Butiran). `GET /videos` gained `added_by`. See §8.6 "Card revision".
-- [ ] **Claude:** Deploy the card revision (backend + frontend) and record it here.
+- [x] **Claude:** Deployed 2026-09-30 (commit `5e1c19e`; backend + frontend rebuilt, no downloads were running; site 200, unauthenticated API still refused, no errors in the backend log).
+- [ ] **User:** Test on the live site (hard-refresh), also on the phone: line 2 Penceramah, line 3 `Ditambah oleh Ahmad • date`; a long Penceramah name truncates; the date never wraps.
 
