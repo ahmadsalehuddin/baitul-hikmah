@@ -226,4 +226,6 @@ This living document tracks the status of all activities across the project, cle
 - [x] **Claude:** Gap closed 2026-09-30: assigning Koleksi Kitab + Siri in Sunting Butiran to a video with no canonical title yet now also sets the canonical title (unless Tajuk was edited). Tested.
 - [ ] **User:** fix the 6 skipped `Risalah Qurban` videos by hand (Siri 1, 3, 4 exist twice; they keep their long titles after the backfill).
 - [ ] **User:** Review on the live site.
+- [x] **Claude (System Owner request 2026-09-30):** Video card revised: line 2 Penceramah, line 3 `Ditambah oleh {added_by} • date`; Lokasi dropped from the card (still in the player, search and Sunting Butiran). `GET /videos` gained `added_by`. See §8.6 "Card revision".
+- [ ] **Claude:** Deploy the card revision (backend + frontend) and record it here.
 

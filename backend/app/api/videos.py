@@ -270,7 +270,12 @@ async def list_videos(
             "location": {
                 "id": v.location.id,
                 "name": v.location.name
-            } if v.location else None
+            } if v.location else None,
+            # Who archived it (video card, spec §8.6); only the display name is exposed.
+            "added_by": {
+                "id": v.added_by_user.id,
+                "display_name": v.added_by_user.display_name
+            } if v.added_by_user else None
         }
 
         user_progress = None

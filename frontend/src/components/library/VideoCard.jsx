@@ -26,12 +26,12 @@ function TruncatedText({ text }) {
   );
 }
 
-/** Video card (spec §8.3.4): 16:9 thumbnail, duration Badge, watch Progress, 2-line title with Tooltip, then Penceramah • Lokasi • date on one line (§8.6). */
+/** Video card (spec §8.3.4): 16:9 thumbnail, duration Badge, watch Progress, 2-line title with Tooltip, then Penceramah, then "Ditambah oleh …" • date (§8.6). */
 export function VideoCard({ video, className }) {
   const location = useLocation();
   const percent = watchedPercent(video);
   const speakerName = video.speaker?.name;
-  const locationName = video.location?.name;
+  const adderName = video.added_by?.display_name;
   const date = formatRelativeDate(video.created_at);
 
   return (
@@ -74,28 +74,16 @@ export function VideoCard({ video, className }) {
           </TooltipTrigger>
           <TooltipContent className="max-w-sm">{video.title}</TooltipContent>
         </Tooltip>
-        {(speakerName || locationName || date) && (
+        {speakerName && (
+          <p className="flex text-sm text-muted-foreground">
+            <TruncatedText text={speakerName} />
+          </p>
+        )}
+        {(adderName || date) && (
           <p className="flex items-center gap-1 text-sm text-muted-foreground">
-            {[
-              speakerName && <TruncatedText key="speaker" text={speakerName} />,
-              locationName && <TruncatedText key="location" text={locationName} />,
-              date && (
-                <span key="date" className="shrink-0 whitespace-nowrap">
-                  {date}
-                </span>
-              ),
-            ]
-              .filter(Boolean)
-              .flatMap((part, index) =>
-                index === 0
-                  ? [part]
-                  : [
-                      <span key={`dot-${index}`} className="shrink-0">
-                        •
-                      </span>,
-                      part,
-                    ],
-              )}
+            {adderName && <TruncatedText text={`Ditambah oleh ${adderName}`} />}
+            {adderName && date && <span className="shrink-0">•</span>}
+            {date && <span className="shrink-0 whitespace-nowrap">{date}</span>}
           </p>
         )}
       </div>
