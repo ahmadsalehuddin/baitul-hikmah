@@ -670,7 +670,7 @@ The "Fungsi Baharu Sedang Dibangunkan" mockup is obsolete. Redesign keeps all li
 
 **Not done / decisions for the System Owner:** the Ceramah tab's add button is "Tambah Ceramah" linking to `/tambah` (a choice made because that tab has nothing else to add; easy to hide instead). The library search does not look at Lokasi (out of scope above).
 
-### 8.6 Canonical ceramah title — `Koleksi Kitab | Siri N` — IMPLEMENTED 2026-09-30 (not yet deployed)
+### 8.6 Canonical ceramah title — `Koleksi Kitab | Siri N` — IMPLEMENTED and DEPLOYED 2026-09-30
 
 **Problem.** Stored titles are the raw YouTube titles: `Kitab X | Ustaz Y | Masjid Z | Siri 20`. Penceramah and Lokasi are already real fields (§8.5) and shown as badges/lines, so the title repeats them and looks messy (2-line clamp on cards). Facts checked in the live DB (2026-09-30): 221 videos, all have a Koleksi Kitab, a Penceramah and a `series_number`; only 2 titles differ from their Koleksi Kitab name (`Sakit- Mati` vs `Sakit - Mati`).
 
