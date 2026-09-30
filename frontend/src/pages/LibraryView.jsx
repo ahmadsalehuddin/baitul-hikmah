@@ -124,6 +124,11 @@ function LibraryViewInner({ mode, id }) {
 
   return (
     <div className="flex flex-col gap-6">
+      {continueVideos.length > 0 && (
+        <div className="mb-4">
+          <ContinueWatchingRow videos={continueVideos} />
+        </div>
+      )}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <LibraryBreadcrumb crumbs={crumbs} />
         <FilterSortControls
@@ -137,7 +142,6 @@ function LibraryViewInner({ mode, id }) {
           onSortChange={setSort}
         />
       </div>
-      {continueVideos.length > 0 && <ContinueWatchingRow videos={continueVideos} />}
       {content}
     </div>
   );

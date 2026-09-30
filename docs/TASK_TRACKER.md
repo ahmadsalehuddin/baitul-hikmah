@@ -188,6 +188,13 @@ This living document tracks the status of all activities across the project, cle
 - [x] **Claude:** Deployed to production 2026-09-29 (`docker compose build backend frontend && docker compose up -d --no-deps backend frontend`; commits `7b53b85`, `0914551`). Implementation notes: [`architecture-specs.md` §8.4 Phase 7.5](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md).
 - [ ] **User:** Test on the live site (hard-refresh): paste 3–5 links incl. a duplicate on Tambah Ceramah (one card per unique video, site stays responsive during the fetch); check card hover and Urus Pustaka tab transitions.
 
+**7.6 UI Enhancements (Pustaka Ceramah)**
+*System Owner request 2026-09-30*
+- [x] **Claude:** Reorder `LibraryView.jsx` layout: move `ContinueWatchingRow` above the breadcrumb/filters with increased gap spacing.
+- [x] **Claude:** Constrain `VideoCard.jsx` details (speaker name and date) to a single line using `line-clamp-1`.
+- [x] **Claude:** Build, test, and deploy. Frontend build passes; deployed 2026-09-30 (`docker compose build frontend && docker compose up -d --no-deps frontend`; backend untouched, no download interruption).
+- [ ] **User:** Test on the live site (hard-refresh): Sambung Tonton row sits above the breadcrumb/filters with extra space below it; speaker/date line on cards never wraps.
+
 ### Phase 8: Lokasi (place of the lecture)
 *Planned 2026-09-29, implemented and deployed 2026-09-29. Spec + implementation notes: [`architecture-specs.md` §8.5](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md).*
 

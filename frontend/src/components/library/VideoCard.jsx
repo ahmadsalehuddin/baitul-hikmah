@@ -63,7 +63,7 @@ export function VideoCard({ video, className }) {
         {video.collection && (
           <p className="line-clamp-1 text-sm text-muted-foreground">{video.collection.title}</p>
         )}
-        {details && <p className="text-sm text-muted-foreground">{details}</p>}
+        {details && <p className="line-clamp-1 text-sm text-muted-foreground">{details}</p>}
       </div>
     </Link>
   );
