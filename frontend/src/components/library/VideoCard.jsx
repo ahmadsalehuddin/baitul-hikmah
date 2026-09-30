@@ -18,7 +18,8 @@ export function watchedPercent(video) {
 export function VideoCard({ video, className }) {
   const location = useLocation();
   const percent = watchedPercent(video);
-  const details = [video.speaker?.name, formatRelativeDate(video.created_at)].filter(Boolean).join(" • ");
+  const speakerName = video.speaker?.name;
+  const date = formatRelativeDate(video.created_at);
 
   return (
     <Link
@@ -63,7 +64,20 @@ export function VideoCard({ video, className }) {
         {video.collection && (
           <p className="line-clamp-1 text-sm text-muted-foreground">{video.collection.title}</p>
         )}
-        {details && <p className="line-clamp-1 text-sm text-muted-foreground">{details}</p>}
+        {(speakerName || date) && (
+          <p className="flex items-center gap-1 text-sm text-muted-foreground">
+            {speakerName && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="min-w-0 truncate">{speakerName}</span>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-sm">{speakerName}</TooltipContent>
+              </Tooltip>
+            )}
+            {speakerName && date && <span className="shrink-0">•</span>}
+            {date && <span className="shrink-0 whitespace-nowrap">{date}</span>}
+          </p>
+        )}
       </div>
     </Link>
   );

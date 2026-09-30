@@ -193,6 +193,7 @@ This living document tracks the status of all activities across the project, cle
 - [x] **Claude:** Reorder `LibraryView.jsx` layout: move `ContinueWatchingRow` above the breadcrumb/filters with increased gap spacing.
 - [x] **Claude:** Constrain `VideoCard.jsx` details (speaker name and date) to a single line using `line-clamp-1`.
 - [x] **Claude:** Build, test, and deploy. Frontend build passes; deployed 2026-09-30 (`docker compose build frontend && docker compose up -d --no-deps frontend`; backend untouched, no download interruption).
+- [x] **Claude:** `VideoCard.jsx`: keep the upload date always visible; Penceramah name truncates with an ellipsis (`min-w-0 truncate`) and shows the full name in a Tooltip; date and bullet are `shrink-0`. Marquee and fixed widths rejected (distracting for seniors, gaps for short names, off-system animation). Built and deployed 2026-09-30.
 - [ ] **User:** Test on the live site (hard-refresh): Sambung Tonton row sits above the breadcrumb/filters with extra space below it; speaker/date line on cards never wraps.
 
 ### Phase 8: Lokasi (place of the lecture)
