@@ -20,6 +20,7 @@ import os
 from app.core.config import VIDEOS_DIR, STORAGE_DIR
 from app.services.streamer import create_video_streaming_response, verify_safe_path
 from app.services.series import parse_series_number
+from app.services.titles import canonical_title, link_from_title, retitle_collection_videos
 from app.services.locations import get_or_create_location, suggest_location_safely
 from app.services.thumbnails import (
     MAX_UPLOAD_BYTES, sniff_image_extension, convert_image_to_webp,
@@ -102,12 +103,17 @@ async def batch_fetch_videos(
         # Best-effort Lokasi from the title (spec §8.5); never blocks or fails the download.
         location = suggest_location_safely(session, title) if not (existing and existing.location_id) else None
 
+        # Koleksi Kitab + canonical title only for a name that already exists (spec §8.6 T1);
+        # otherwise the YouTube title stays and the admin assigns the Koleksi Kitab later.
+        linked_collection, linked_series, linked_title = (None, None, None) if existing else link_from_title(session, title)
+
         video = existing or Video(
             youtube_url=url,
             youtube_id=yt_id,
-            title=title,
+            title=linked_title or title,
             duration_seconds=duration,
-            series_number=parse_series_number(title),
+            series_number=linked_series if linked_collection else parse_series_number(title),
+            collection_id=linked_collection.id if linked_collection else None,
             speaker_id=speaker.id if speaker else None,
             added_by_user_id=current_user.id,
             status=VideoStatus.pending,
@@ -309,6 +315,13 @@ async def update_video(
     if not video:
         raise HTTPException(status_code=404, detail="Video tidak ditemui")
 
+    # Remember whether the title may be regenerated (spec §8.6 T2): it is still the auto-generated
+    # one, or the video had no Koleksi Kitab / Siri yet, so its raw title is a placeholder.
+    old_title = video.title
+    old_collection = session.get(Collection, video.collection_id) if video.collection_id else None
+    old_canonical = canonical_title(old_collection.title if old_collection else None, video.series_number)
+    title_regenerable = old_canonical is None or old_title == old_canonical
+
     if payload.title is not None:
         video.title = payload.title.strip()
 
@@ -349,6 +362,13 @@ async def update_video(
     # series_number is nullable, so "absent" (leave alone) must differ from null (clear it)
     if "series_number" in payload.model_fields_set:
         video.series_number = payload.series_number
+
+    # Koleksi Kitab / Siri changed and Tajuk was not edited: regenerate, but never a hand-edited title.
+    if title_regenerable and video.title == old_title:
+        new_collection = session.get(Collection, video.collection_id) if video.collection_id else None
+        new_title = canonical_title(new_collection.title if new_collection else None, video.series_number)
+        if new_title:
+            video.title = new_title
 
     session.add(video)
     session.commit()
@@ -688,7 +708,9 @@ async def update_collection(
         raise HTTPException(status_code=404, detail="Koleksi tidak ditemui")
 
     if payload.title is not None:
-        collection.title = payload.title.strip()
+        new_name = payload.title.strip()
+        retitle_collection_videos(session, collection.id, collection.title, new_name)
+        collection.title = new_name
     if payload.description is not None:
         collection.description = payload.description
     if payload.speaker_id is not None:
@@ -737,6 +759,9 @@ async def merge_collections(
     target = session.get(Collection, payload.target_collection_id)
     if not source or not target:
         raise HTTPException(status_code=404, detail="Koleksi sumber atau sasaran tidak ditemui")
+
+    # Auto-generated titles follow their videos into the target (before the videos are moved).
+    retitle_collection_videos(session, source.id, source.title, target.title)
 
     # A bulk UPDATE, not per-video ORM changes: deleting `source` afterwards would otherwise
     # null the collection_id of every video still listed in `source.videos`.
@@ -811,11 +836,17 @@ async def scan_existing_media(
 
                 title = stem
 
+            # Canonical title (spec §8.6) when the Koleksi Kitab and the Siri are both known.
+            scan_series = parse_series_number(title)
+            if collection_obj is None:
+                collection_obj, _, _ = link_from_title(session, title)
+            title = canonical_title(collection_obj.title if collection_obj else None, scan_series) or title
+
             new_vid = Video(
                 youtube_url="local://" + file_path.name,
                 youtube_id=file_path.stem[:30],
                 title=title,
-                series_number=parse_series_number(title),
+                series_number=scan_series,
                 duration_seconds=0,
                 file_size_bytes=size_bytes,
                 file_path=str(file_path),

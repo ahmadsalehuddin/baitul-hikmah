@@ -213,3 +213,17 @@ This living document tracks the status of all activities across the project, cle
 - [x] **Claude (System Owner request 2026-09-29):** Penceramah tab: **Gabung** and **Padam** (API `DELETE /speakers/{id}`, `POST /speakers/merge`; Padam refused while the speaker has ceramah or koleksi kitab). Spec §8.5 "Penceramah Padam / Gabung". Committed as `d74f3ba` and deployed 2026-09-29 (no downloads running; DB backed up first as `baitul_hikmah.db.bak-pre-speaker-merge`).
 - [ ] **User:** Review on the live site.
 
+### Phase 9: Canonical ceramah title (`Koleksi Kitab | Siri N`)
+*Requested 2026-09-30. Spec + decisions + implementation notes: [`architecture-specs.md` §8.6](file:///home/ahmadsalehuddin/code/personal/baitul-hikmah/docs/architecture-specs.md). Implemented 2026-09-30; **not yet deployed**.*
+
+- [x] **User (decisions 2026-09-30):** stored (not derived) title; format `Koleksi Kitab | Siri N`; no Siri number → title unchanged; video card drops the Koleksi Kitab line and shows `Penceramah • Lokasi • date`; no field for the original YouTube title (DB backup is enough).
+- [x] **User:** confirmed T1 (revised: on new downloads, link only when the title starts with an *existing* Koleksi Kitab name and has a Siri; never create one automatically) and T2 (keep stored titles in sync on rename / Gabung / edit; hand-edited titles never touched); go-ahead given.
+- [x] **Claude:** `canonical_title()` helper + backfill script `canonicalize_titles.py` (backup first, `--dry-run`, idempotent, skips and lists duplicate results).
+- [x] **Claude:** Frontend: add Lokasi to library search text; `VideoCard` details line; verify search for Penceramah, Koleksi Kitab and Lokasi.
+- [x] **Claude:** T1/T2 behaviour in `batch-fetch`, `scan-existing`, `PUT /videos/{id}`, `PUT /collections/{id}`, `POST /collections/merge` (if confirmed).
+- [x] **Claude:** Build passes; verified on a copy of the live DB (script: 215 rewritten, 6 skipped; API + search checks in §8.6).
+- [ ] **Claude:** Deploy (`docker compose build backend frontend && docker compose up -d --no-deps backend frontend`; check no downloads first — none pending on 2026-09-30), then run `./venv/bin/python scripts/canonicalize_titles.py --dry-run` and without `--dry-run` once on the live DB from `backend/`; record the result here. **Waiting for the System Owner's go-ahead to deploy.**
+- [x] **Claude:** Gap closed 2026-09-30: assigning Koleksi Kitab + Siri in Sunting Butiran to a video with no canonical title yet now also sets the canonical title (unless Tajuk was edited). Tested.
+- [ ] **User:** fix the 6 skipped `Risalah Qurban` videos by hand (Siri 1, 3, 4 exist twice; they keep their long titles after the backfill).
+- [ ] **User:** Review on the live site.
+

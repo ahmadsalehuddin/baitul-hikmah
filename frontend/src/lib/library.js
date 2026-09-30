@@ -36,7 +36,9 @@ export function buildLibrary(videos, speakers) {
     sortTitle: v.title,
     newestMs: parseApiDate(v.created_at),
     oldestMs: parseApiDate(v.created_at),
-    searchText: normalize(`${v.title} ${v.collection?.title ?? ""} ${v.speaker?.name ?? ""}`),
+    searchText: normalize(
+      `${v.title} ${v.collection?.title ?? ""} ${v.speaker?.name ?? ""} ${v.location?.name ?? ""}`,
+    ),
   }));
 
   const byCollection = new Map();
