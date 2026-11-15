@@ -2,6 +2,7 @@
 Seeds the two pre-configured Baitul Hikmah accounts (Ahmad/Admin, Ayah/Viewer).
 Run from `backend/`: python scripts/seed_users.py
 """
+import os
 import sys
 from pathlib import Path
 
@@ -12,8 +13,8 @@ from app.core.database import engine, init_db
 from app.models.schema import User, Role
 
 SEED_USERS = [
-    {"email": "admin@example.com", "display_name": "Ahmad", "role": Role.admin},
-    {"email": "viewer@example.com", "display_name": "Ayah", "role": Role.viewer},
+    {"email": os.getenv("SEED_ADMIN_EMAIL", "admin@example.com"), "display_name": "Ahmad", "role": Role.admin},
+    {"email": os.getenv("SEED_VIEWER_EMAIL", "viewer@example.com"), "display_name": "Ayah", "role": Role.viewer},
 ]
 
 def seed_users():

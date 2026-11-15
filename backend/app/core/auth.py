@@ -1,4 +1,5 @@
 import logging
+import os
 from datetime import datetime, timezone, timedelta
 from typing import Optional
 
@@ -14,7 +15,7 @@ from app.models.schema import User, Role
 logger = logging.getLogger(__name__)
 
 # Local development only (ENVIRONMENT != production).
-DEV_FALLBACK_EMAIL = "admin@example.com"
+DEV_FALLBACK_EMAIL = os.getenv("DEV_FALLBACK_EMAIL", "admin@example.com")
 LOGIN_REFRESH_INTERVAL = timedelta(hours=1)
 
 CF_JWT_ENABLED = bool(CF_ACCESS_TEAM_DOMAIN and CF_ACCESS_AUD)

@@ -19,8 +19,8 @@ services:
       # Cloudflare Access JWT verification (docs/architecture-specs.md §6.1); set both in .env to enable.
       - CF_ACCESS_TEAM_DOMAIN=${CF_ACCESS_TEAM_DOMAIN:-}
       - CF_ACCESS_AUD=${CF_ACCESS_AUD:-}
-      # The team was renamed; tokens still carry the old issuer (public value, not a secret).
-      - CF_ACCESS_EXTRA_ISSUERS=${CF_ACCESS_EXTRA_ISSUERS:-https://your-team.cloudflareaccess.com}
+      # Optional extra accepted token issuers (comma-separated, configured via .env).
+      - CF_ACCESS_EXTRA_ISSUERS=${CF_ACCESS_EXTRA_ISSUERS:-}
 
   frontend:
     build:
