@@ -34,7 +34,13 @@ services:
       - backend
 
   tunnel:
-    image: cloudflare/cloudflared:latest
+    image: cloudflare/cloudflared:2026.9.3   # pinned; bump on purpose
     container_name: baitul_hikmah_tunnel
     restart: unless-stopped
-    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    # Token as an environment variable, not on the command line: any user on the host can read a process's
+    # command line (ps), but not another user's environment. (`docker inspect` still shows it: Docker access = root.)
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN:?set CLOUDFLARE_TUNNEL_TOKEN in .env}
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
